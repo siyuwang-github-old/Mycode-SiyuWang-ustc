@@ -13,14 +13,14 @@ classdef horizon < SiyuLatex
     end
     methods
         function obj = horizon()
-            obj.load_data_gp(fullfile('W:\LAB\DATAMAT','data_horizon_gpindmeasure.mat'));
+            obj.load_data_gp(fullfile(obj.siyupathdatamat,'data_horizon_gpindmeasure.mat'));
             obj.exps = unique(obj.data_gp.info_exp);
             obj.n_exp = length(obj.exps);
             obj.acthres = 0;
         end
         function load_data(obj, filename)
             if ~exist('filename')
-                filename = fullfile('W:\LAB\DATAMAT','data_horizon_compiled.mat');
+                filename = fullfile(obj.siyupathdatamat,'data_horizon_compiled.mat');
             end
             obj.data = importdata(filename);
         end
@@ -328,7 +328,7 @@ classdef horizon < SiyuLatex
                         end
                     end
             end
-            save([bayessavename '_' modelname],'bayesdata','modelname');
+            save(fullfile(obj.siyupathresultbayes, [bayessavename '_' modelname]),'bayesdata','modelname');
         end
     end
 end

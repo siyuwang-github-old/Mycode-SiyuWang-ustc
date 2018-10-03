@@ -2,7 +2,7 @@ clear all, clc;
 s = cardstopping_modelfitting;
 save = 1;
 show = 0;
-savefolder = 'W:\LAB\FIGS\Card_stopping';
+savefolder = 'Card_stopping';
 savename = '';
 s.setparameter(show, save, savefolder, savename);
 s.loadall(60);

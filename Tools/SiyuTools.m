@@ -1,4 +1,4 @@
-classdef SiyuTools < handle
+classdef SiyuTools < Siyuhandle
     properties
     end
     methods

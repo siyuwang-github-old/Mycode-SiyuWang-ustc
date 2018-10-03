@@ -2,7 +2,7 @@ clear all, clc, close all;
 pt = plot_horizonn;
 exps = pt.exps;
 exps = exps([13 15 18]);
-savedir = 'W:\LAB\FIGS\Full_feedback';
+savedir = 'Full_feedback';
 %% active vs passive
 for analysisi = [1]
     switch analysisi

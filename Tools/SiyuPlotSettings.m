@@ -1,4 +1,4 @@
-classdef SiyuPlotSettings < handle
+classdef SiyuPlotSettings < Siyuhandle
     properties
         colors
         issave
@@ -51,7 +51,7 @@ classdef SiyuPlotSettings < handle
         end
         function setparameter(obj, isshow, issave, savedir, savename)
             if issave
-                obj.savedir = savedir;
+                obj.savedir = fullfile(obj.siyupathfigure, savedir);
                 obj.savename = savename;
             end
             obj.issave = issave;

@@ -5,7 +5,7 @@ exps = exps0([1 2 6 7 8 12 13]);
 exps2 = exps0([6 7 13 19]);
 pt.acthres = 0;
 % exps = exps([1 2 8 12 13]);
-savedir = 'W:\LAB\FIGS\Active_passive_sequential';
+savedir = 'Active_passive_sequential';
 %% active vs passive
 clc;
 for analysisi = [1:1:10]

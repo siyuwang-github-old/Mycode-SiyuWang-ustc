@@ -1,7 +1,7 @@
 clear all, clc, close all;
 pt = plot_horizonn;
 exps = pt.exps(end);
-savedir = 'W:\LAB\FIGS\MCMC_lifespan';
+savedir = 'MCMC_lifespan';
 pt.load_data;
 %% MCMC_lifespan
 pt.acthres = 0.55;
@@ -18,6 +18,6 @@ pt.line_modelfreebyagen;
 pt.line_switchn;
 pt.line_bypatternn;
 %%
-pt.save4MCMC(fullfile('W:\LAB\DATAMAT\BAYESDATA','BenAndreaLifespan'),'learningmodel');
+pt.save4MCMC('BenAndreaLifespan','learningmodel');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
