@@ -45,7 +45,7 @@ classdef analysis_bayesian < handle
             end
            
             obj.init0 = obj.get_bayesinit;
-            modelfile = fullfile(fullfile(obj.mainpath,'Dropbox\Analysis\HORIZON\BAYESIAN\Models'),...
+            modelfile = fullfile(obj.siyupathmodelbayes,...
                 ['model_' obj.modelname '.txt']);
             disp(['Fitting now:' modelfile]);
             [samples, stats, structArray, tictoc] = obj.fit_matjags(modelfile, obj.data, obj.init0, obj.nchains, obj.nburnin, obj.nsamples, obj.params);
