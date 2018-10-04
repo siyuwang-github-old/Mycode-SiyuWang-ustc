@@ -57,7 +57,11 @@ classdef analysis_bayesian < Siyuhandle
                 fnms = fieldnames(data);
                 fnms = fnms(cellfun(@(x)size(data.(x),1), fnms) == data.nSubject);
                 for fi = 1:length(fnms)
-                    data.(fnms{fi}) = data.(fnms{fi})(1:2,:);
+                    if length(data.(fnms{fi})) == 2
+                        data.(fnms{fi}) = data.(fnms{fi})(1:2,:);
+                    else
+                        data.(fnms{fi}) = data.(fnms{fi})(1:2,:,:);
+                    end
                 end
                 data.nSubject = 2;
                 nburnin = 0;

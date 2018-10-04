@@ -120,13 +120,13 @@ model {
             for (t in 1:nForcedTrials) { # loop over forced-choice trials
 
                 # learning rates
-                alpha1[s,g,t+1] <- ifelse( t == 0, 1/( 1/(alpha1[s,g,t] + alpha_d[s]) + 1 ), 1/( 1/(alpha1[s,g,t] + alpha_d[s]) ) )
-                alpha2[s,g,t+1] <- ifelse( t == 1, 1/( 1/(alpha2[s,g,t] + alpha_d[s]) + 1 ), 1/( 1/(alpha2[s,g,t] + alpha_d[s]) ) )
-				#cforced[s,g,t]
+                alpha1[s,g,t+1] <- ifelse( cforced[s,g,t] == 0, 1/( 1/(alpha1[s,g,t] + alpha_d[s]) + 1 ), 1/( 1/(alpha1[s,g,t] + alpha_d[s]) ) )
+                alpha2[s,g,t+1] <- ifelse( cforced[s,g,t] == 1, 1/( 1/(alpha2[s,g,t] + alpha_d[s]) + 1 ), 1/( 1/(alpha2[s,g,t] + alpha_d[s]) ) )
+				#
                 # update means for each bandit
-                mu1[s,g,t+1] <- ifelse( t == 0, mu1[s,g,t] + alpha1[s,g,t+1] * (t - mu1[s,g,t]), mu1[s,g,t])
-                mu2[s,g,t+1] <- ifelse( t == 1, mu2[s,g,t] + alpha2[s,g,t+1] * (t - mu2[s,g,t]), mu2[s,g,t])
-				# r[s,g,t]
+                mu1[s,g,t+1] <- ifelse( cforced[s,g,t] == 0, mu1[s,g,t] + alpha1[s,g,t+1] * (r[s,g,t] - mu1[s,g,t]), mu1[s,g,t])
+                mu2[s,g,t+1] <- ifelse( cforced[s,g,t] == 1, mu2[s,g,t] + alpha2[s,g,t+1] * (r[s,g,t] - mu2[s,g,t]), mu2[s,g,t])
+				# 
             }
 
             # compute difference in values
