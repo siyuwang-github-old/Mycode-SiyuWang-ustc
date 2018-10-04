@@ -19,5 +19,7 @@ pt.line_switchn;
 pt.line_bypatternn;
 %%
 pt.save4MCMC('BenAndreaLifespan','learningmodel');
+%%
+pt.save4MCMC('BenAndreaLifespan','simplemodel');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         

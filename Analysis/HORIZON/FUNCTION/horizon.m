@@ -316,8 +316,8 @@ classdef horizon < SiyuLatex
                         for si = obj.idxn{ci}'
                             gd = data(si).game;
                             nT = gd.n_game;
-                            bayesdata.Cond(si) = ci;
-                            bayesdata.nTrial(si) = nT;
+                            bayesdata.Cond(si,1) = ci;
+                            bayesdata.nTrial(si,1) = nT;
                             bayesdata.horizon(si,:) = obj.getcolumn(ceil(gd.cond_horizon'/5), LEN);
                             bayesdata.dInfo(si,:) = obj.getcolumn(gd.cond_info',LEN);
                             bayesdata.c5(si,:) = obj.getcolumn((gd.key(:,5)' == 1) + 0,LEN);
@@ -327,8 +327,27 @@ classdef horizon < SiyuLatex
                             end
                         end
                     end
+                
+                case 'simplemodel'
+                    bayesdata.nHorizon = 2;
+                    bayesdata.nSubject = length(data);
+                    nT = arrayfun(@(x)x.game.n_game, data);
+                    LEN = max(nT);
+                    bayesdata.nCond = length(obj.idxn);
+                    for ci = 1:bayesdata.nCond;
+                        for si = obj.idxn{ci}'
+                            gd = data(si).game;
+                            nT = gd.n_game;
+                            bayesdata.Cond(si,1) = ci;
+                            bayesdata.nTrial(si,1) = nT;
+                            bayesdata.horizon(si,:) = obj.getcolumn(ceil(gd.cond_horizon'/5), LEN);
+                            bayesdata.dInfo(si,:) = obj.getcolumn(gd.cond_info',LEN);
+                            bayesdata.c5(si,:) = obj.getcolumn((gd.key(:,5)' == 1) + 0,LEN);
+                            bayesdata.dM4(si,:) = obj.getcolumn(gd.dfR4_empirical',LEN);
+                        end
+                    end
             end
-            save(fullfile(obj.siyupathresultbayes, [bayessavename '_' modelname]),'bayesdata','modelname');
+            save(fullfile(obj.siyupathdatabayes, [bayessavename '_' modelname]),'bayesdata','modelname');
         end
     end
 end

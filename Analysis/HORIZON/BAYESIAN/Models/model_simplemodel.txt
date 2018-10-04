@@ -1,0 +1,49 @@
+model{
+	    for (j in 1:nCond) { # loop over loss conditions
+			for (h in 1:nHorizon) {
+				hyperIB_mean_ncond[i,j] ~ dnorm(0, 0.0001)
+				hyperIB_sigma_pcond[i,j] ~ dgamma(1,0.001) % exp(0.01)
+				hyperIB_tau[i,j] <- 1 / hyperIB_sigma_pcond[i,j]
+			
+				hyperN_k_pcond[i,j] ~ dexp(1) %0.01
+				hyperN_lambda_pcond[i,j] ~ dexp(10)
+				hyperN_mean[i,j] <- hyperN_k_pcond[i,j] / hyperN_lambda_pcond[i,j]
+
+				hyperSB_mean_ncond[i,j] ~ dnorm(0, 0.0001)
+				hyperSB_sigma_pcond[i,j] ~ dgamma(1,0.001)
+				hyperSB_tau[i,j] <- 1 / hyperSB_sigma_pcond[i,j]
+			
+			}
+			dhyperIB[j] = hyperIB_mean_ncond[2,j] - hyperIB_mean_ncond[1,j];
+			dhyperSB[j] = hyperSB_mean_ncond[2,j] - hyperSB_mean_ncond[1,j];
+			dhyperN[j] = hyperN_mean[2,j] - hyperN_mean[1,j];
+		}
+		
+		 # priors ==============================================================
+		for (s in 1:nSubject) { # loop over subjects
+			for (i in 1:nHorizon) { # loop over horizon
+					# information bonus
+					IB[s,i] ~ dnorm( hyperIB_mean_ncond[i,Cond[s]], hyperIB_tau[i,Cond[s]] )
+					# spatial bias
+					SB[s,i] ~ dnorm( hyperSB_mean_ncond[i,Cond[s]], hyperSB_tau[i,Cond[s]] )
+					# decision noise
+					N[s,i] ~ dgamma( hyperN_k_pcond[i,Cond[s]], hyperN_lambda_pcond[i,Cond[s]] )
+			}
+		}
+
+		for (s in 1:nSubject){
+            for (g in 1:nTrial[s]) { 
+				IB_g[s,g] <- IB[s, horizon[s,g]];
+				sigma_g[s,g] <- N[s, horizon[s,g]];
+				bias_g[s,g] <- SB[s, horizon[s,g]];
+				dNoise[s] = dNs[2, s] - dNs[1, s];
+            	dQ[s, g] <- dM4[s,t] + IB_g[s,g] * dInfo[s, g] + bias_g[s,g];
+
+				# choice probabilities
+				p[s,g] <- 1 / ( 1 + exp( - dQ[s,g] / (sigma_g[s,g])))
+
+				# choices
+				c5[s,g] ~ dbern( p[s,g] )		
+			}
+		}
+}

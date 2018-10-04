@@ -32,24 +32,27 @@ model {
 
  
     # information bonus and decision noise vary by condition 1 and condition 2
-    for (i in 1:nHorizon){ # loop over horizon
-        for (j in 1:nCond) { # loop over loss conditions
-
-            AA_mean_n22[i,j] ~ dnorm(0, 0.0001)
-            AA_sigma_p22[i,j] ~ dgamma(1,0.001)
-            AA_tau[i,j] <- 1 / AA_sigma_p22[i,j]
+    for (j in 1:nCond) { # loop over loss conditions
+		for (i in 1:nHorizon){ # loop over horizon
         
-            # BB_k_p22[i,j] ~ dexp(0.1)
-            # BB_lambda_p22[i,j] ~ dexp(0.1)
-            BB_k_p22[i,j] ~ dexp(1)
-            BB_lambda_p22[i,j] ~ dexp(10)
-            BB_mean[i,j] <- BB_k_p22[i,j] / BB_lambda_p22[i,j]
+            hyperIB_mean_ncond[i,j] ~ dnorm(0, 0.0001)
+            hyperIB_sigma_pcond[i,j] ~ dgamma(1,0.001)
+            hyperIB_tau[i,j] <- 1 / hyperIB_sigma_pcond[i,j]
+        
+            # hyperN_k_pcond[i,j] ~ dexp(0.1)
+            # hyperN_lambda_pcond[i,j] ~ dexp(0.1)
+            hyperN_k_pcond[i,j] ~ dexp(1)
+            hyperN_lambda_pcond[i,j] ~ dexp(10)
+            hyperN_mean[i,j] <- hyperN_k_pcond[i,j] / hyperN_lambda_pcond[i,j]
 
-            SB_mean_n22[i,j] ~ dnorm(0, 0.0001)
-            SB_sigma_p22[i,j] ~ dgamma(1,0.001)
-            SB_tau[i,j] <- 1 / SB_sigma_p22[i,j]
+            hyperSB_mean_ncond[i,j] ~ dnorm(0, 0.0001)
+            hyperSB_sigma_pcond[i,j] ~ dgamma(1,0.001)
+            hyperSB_tau[i,j] <- 1 / hyperSB_sigma_pcond[i,j]
         
         }
+		dhyperIB[j] = hyperIB_mean_ncond[2,j] - hyperIB_mean_ncond[1,j];
+		dhyperSB[j] = hyperSB_mean_ncond[2,j] - hyperSB_mean_ncond[1,j];
+		dhyperN[j] = hyperN_mean[2,j] - hyperN_mean[1,j];
     }
 
     # priors ==============================================================
@@ -76,11 +79,11 @@ model {
         #    for (j in 1:nCond) { # loop over uncertainty condition
 
                 # information bonus
-                AA[s,i] ~ dnorm( AA_mean_n22[i,Cond[s]], AA_tau[i,Cond[s]] )
+                IB[s,i] ~ dnorm( hyperIB_mean_ncond[i,Cond[s]], hyperIB_tau[i,Cond[s]] )
                 # spatial bias
-                SB[s,i] ~ dnorm( SB_mean_n22[i,Cond[s]], SB_tau[i,Cond[s]] )
+                SB[s,i] ~ dnorm( hyperSB_mean_ncond[i,Cond[s]], hyperSB_tau[i,Cond[s]] )
                 # decision noise
-                BB[s,i] ~ dgamma( BB_k_p22[i,Cond[s]], BB_lambda_p22[i,Cond[s]] )
+                N[s,i] ~ dgamma( hyperN_k_pcond[i,Cond[s]], hyperN_lambda_pcond[i,Cond[s]] )
                
         #    }
         }
@@ -105,8 +108,8 @@ model {
 
             # information bonus and decision noise for this game depend on 
             # condition 1, C1, and condition 2, C2
-            A[s,g] <- AA[s, horizon[s,g]]
-            sigma_g[s,g] <- BB[s, horizon[s,g]]
+            IB_g[s,g] <- IB[s, horizon[s,g]]
+            sigma_g[s,g] <- N[s, horizon[s,g]]
             bias[s,g] <- SB[s, horizon[s,g]]
 
 
@@ -124,7 +127,7 @@ model {
             }
 
             # compute difference in values
-            dQ[s,g] <- mu2[s,g,nForcedTrials+1] - mu1[s,g,nForcedTrials+1] + A[s,g] * dInfo[s,g] + bias[s,g]
+            dQ[s,g] <- mu2[s,g,nForcedTrials+1] - mu1[s,g,nForcedTrials+1] + IB_g[s,g] * dInfo[s,g] + bias_g[s,g]
 
             # choice probabilities
             p[s,g] <- 1 / ( 1 + exp( - dQ[s,g] / (sigma_g[s,g])))
