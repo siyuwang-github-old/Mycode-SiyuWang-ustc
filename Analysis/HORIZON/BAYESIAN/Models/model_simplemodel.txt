@@ -1,11 +1,11 @@
 model{
 	    for (j in 1:nCond) { # loop over loss conditions
-			for (h in 1:nHorizon) {
+			for (i in 1:nHorizon) {
 				hyperIB_mean_ncond[i,j] ~ dnorm(0, 0.0001)
-				hyperIB_sigma_pcond[i,j] ~ dgamma(1,0.001) % exp(0.01)
+				hyperIB_sigma_pcond[i,j] ~ dgamma(1,0.001) # exp(0.01)
 				hyperIB_tau[i,j] <- 1 / hyperIB_sigma_pcond[i,j]
 			
-				hyperN_k_pcond[i,j] ~ dexp(1) %0.01
+				hyperN_k_pcond[i,j] ~ dexp(1) #0.01
 				hyperN_lambda_pcond[i,j] ~ dexp(10)
 				hyperN_mean[i,j] <- hyperN_k_pcond[i,j] / hyperN_lambda_pcond[i,j]
 
@@ -29,6 +29,9 @@ model{
 					# decision noise
 					N[s,i] ~ dgamma( hyperN_k_pcond[i,Cond[s]], hyperN_lambda_pcond[i,Cond[s]] )
 			}
+			dN[s] = N[s,2] - N[s,1];
+			dIB[s] = IB[s,2] - IB[s,1];
+			dSB[s] = SB[s,2] - SB[s,1];
 		}
 
 		for (s in 1:nSubject){
@@ -36,8 +39,7 @@ model{
 				IB_g[s,g] <- IB[s, horizon[s,g]];
 				sigma_g[s,g] <- N[s, horizon[s,g]];
 				bias_g[s,g] <- SB[s, horizon[s,g]];
-				dNoise[s] = dNs[2, s] - dNs[1, s];
-            	dQ[s, g] <- dM4[s,t] + IB_g[s,g] * dInfo[s, g] + bias_g[s,g];
+				dQ[s, g] <- dM4[s,g] + IB_g[s,g] * dInfo[s, g] + bias_g[s,g];
 
 				# choice probabilities
 				p[s,g] <- 1 / ( 1 + exp( - dQ[s,g] / (sigma_g[s,g])))

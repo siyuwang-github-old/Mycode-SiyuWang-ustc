@@ -76,17 +76,20 @@ model {
         
         # information bonus and decision noise ----------------------------
         for (i in 1:nHorizon) { # loop over horizon
-        #    for (j in 1:nCond) { # loop over uncertainty condition
+			#    for (j in 1:nCond) { # loop over uncertainty condition
 
-                # information bonus
-                IB[s,i] ~ dnorm( hyperIB_mean_ncond[i,Cond[s]], hyperIB_tau[i,Cond[s]] )
-                # spatial bias
-                SB[s,i] ~ dnorm( hyperSB_mean_ncond[i,Cond[s]], hyperSB_tau[i,Cond[s]] )
-                # decision noise
-                N[s,i] ~ dgamma( hyperN_k_pcond[i,Cond[s]], hyperN_lambda_pcond[i,Cond[s]] )
-               
-        #    }
+            # information bonus
+            IB[s,i] ~ dnorm( hyperIB_mean_ncond[i,Cond[s]], hyperIB_tau[i,Cond[s]] )
+            # spatial bias
+            SB[s,i] ~ dnorm( hyperSB_mean_ncond[i,Cond[s]], hyperSB_tau[i,Cond[s]] )
+            # decision noise
+            N[s,i] ~ dgamma( hyperN_k_pcond[i,Cond[s]], hyperN_lambda_pcond[i,Cond[s]] )
+            #	}   
         }
+		
+		dN[s] = N[s,2] - N[s,1];
+		dIB[s] = IB[s,2] - IB[s,1];
+		dSB[s] = SB[s,2] - SB[s,1];
 
     }
 
