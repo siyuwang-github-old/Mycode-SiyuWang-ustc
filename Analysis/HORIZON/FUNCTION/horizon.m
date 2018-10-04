@@ -322,7 +322,7 @@ classdef horizon < SiyuLatex
                             bayesdata.dInfo(si,:) = obj.getcolumn(gd.cond_info',LEN);
                             bayesdata.c5(si,:) = obj.getcolumn((gd.key(:,5)' == 1) + 0,LEN);
                             for ti = 1:bayesdata.nForcedTrials
-                                bayesdata.c(si,:,ti) =  obj.getcolumn((gd.key(:,ti)' == 1) + 0,LEN);
+                                bayesdata.cforced(si,:,ti) =  obj.getcolumn((gd.key(:,ti)' == 1) + 0,LEN);
                                 bayesdata.r(si,:,ti) =  obj.getcolumn(gd.R_chosen(:,ti)',LEN);
                             end
                         end

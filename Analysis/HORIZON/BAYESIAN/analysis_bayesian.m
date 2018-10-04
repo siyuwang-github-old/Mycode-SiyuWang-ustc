@@ -110,7 +110,7 @@ classdef analysis_bayesian < Siyuhandle
                     poolsize = poolobj.NumWorkers;
                 end
                 if poolsize == 0
-                    parpool;
+                    parpool('IdleTimeout', Inf)
                 end
                 obj.poolobj = poolobj;
             end
