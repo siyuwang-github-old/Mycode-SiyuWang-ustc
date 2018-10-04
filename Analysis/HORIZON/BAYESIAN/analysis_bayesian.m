@@ -77,9 +77,9 @@ classdef analysis_bayesian < Siyuhandle
             obj.stats = stats;
             obj.samples = samples;
         end
-        function savesamples(obj, savename)
+        function savesamples(obj)
             samples = obj.samples;
-            save(fullfile(obj.savepath, [savename,'_samples.mat']),'samples','-v7.3');
+            save(fullfile(obj.siyupathresultbayes, [obj.filename,'_bayessamples.mat']),'samples','-v7.3');
         end
         function init0 = get_bayesinit(obj)
             params = obj.params;
