@@ -111,7 +111,15 @@ classdef SiyuPlotSettings < Siyuhandle
             obj.figmargint{2,2} = [0.12, 0.1, 0.05, 0.05];
             obj.figgapt{2,2} = [0.15 0.1];
             obj.fontsize_leg{2,2} = 10;
+            obj.figsize{1,3} = [0.02 0.15 0.96 0.7];
+            obj.figmargin{1,3} = [0.15, 0.07, 0.1, 0.02];
+            obj.figgapt{1,3} = [0.06 0.1];
+            obj.figsizet{1,3} = [0.02 0.15 0.96 0.7];
+            obj.figmargint{1,3} = [0.15, 0.07, 0.1, 0.02];
+            obj.figgap{1,3} = [0.06 0.1];
             
+            obj.fontsize_leg{1,3} = 10;
+
             obj.fontsize_face = 20;
             obj.temp_fontsize_leg = obj.fontsize_leg{1,1};
             obj.fontsize_axes = 20;
