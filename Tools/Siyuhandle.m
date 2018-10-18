@@ -10,12 +10,12 @@ classdef Siyuhandle < handle
     end
     methods
         function obj = Siyuhandle()
-            obj.siyupathmain = 'C:\Users\sywangr\Dropbox\GITHUB_CODE_BACKUP\Mycode-SiyuWang-ustc\';
-            obj.siyupathdata = '';
-            obj.siyupathdatamat = '';
-            obj.siyupathfigure = '';
-            obj.siyupathdatabayes = 'C:\Users\sywangr\Dropbox\BAYESDATA';
-            obj.siyupathresultbayes = 'C:\Users\sywangr\Dropbox\BAYESRESULT';
+            obj.siyupathmain = 'W:\LAB\CODE';
+            obj.siyupathdata = 'W:\LAB\DATA';
+            obj.siyupathdatamat = 'W:\LAB\DATAMAT';
+            obj.siyupathfigure = 'W:\LAB\FIGS';
+            obj.siyupathdatabayes = 'W:\LAB\DATAMAT\BAYESDATA';
+            obj.siyupathresultbayes = 'W:\LAB\DATAMAT\BAYESRESULT';
             obj.siyupathmodelbayes = fullfile(obj.siyupathmain,'\Analysis\HORIZON\BAYESIAN\Models');
         end
     end
