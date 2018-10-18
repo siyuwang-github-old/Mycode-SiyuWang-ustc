@@ -279,8 +279,14 @@ classdef SiyuPlotSettings < Siyuhandle
             if ~exist('y')
                 y = cell(length(x));
             end
+            if ~iscell(y)
+                y = {y};
+            end
             if isempty(x)
                 x = cell(length(y));
+            end
+            if ~iscell(x)
+                y = {y};
             end
             obj.hardxlim = x;
             obj.hardylim = y;

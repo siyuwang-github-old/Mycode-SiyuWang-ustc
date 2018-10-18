@@ -8,7 +8,9 @@ pt.acthres = 0;
 savedir = 'Active_passive_sequential';
 %% active vs passive
 clc;
-for analysisi = [1:1:10]
+% analysisrange = [1:1:10];
+analysisrange = [8 9 10];
+for analysisi = analysisrange
     switch analysisi
         case 1 % within - active vs passive(no delay)
             pt.setupexpwithin('16F019', [], 1);
@@ -76,7 +78,7 @@ for analysisi = [1:1:10]
             pt.ispairedttest = [true false];
             pt.temp_sigstar_y_direction = [-1, 1, -1, 1];
         case 8 % within - sequential
-            pt.setupexpwithin('18F018', [], []);
+            pt.setupexpwithin({'18F018','18F037'}, [], []);
             pt.setupcolorn({'AZred','AZcactus'},{{'lightred','lightcactus'},{'AZred','AZcactus'}});
             pt.setcompareidx('info_session',[2 1],{'Active','Sequential'});
             pt.setparameter(0, 1, fullfile(savedir,'active_sequential_within'), 'sequential')
@@ -86,7 +88,7 @@ for analysisi = [1:1:10]
             pt.temp_sigstar_y_direction = [-1, 1];
         case 9 % within - sequential, only the first order
             idx_special = (mod(pt.data_gp.subjectID,2) == 1) == arrayfun(@(x)x == 2, pt.data_gp.info_session);
-            pt.setupexpwithin('18F018', [], [], idx_special);
+            pt.setupexpwithin({'18F018','18F037'}, [], [], idx_special);
             pt.setupcolorn({'AZred','AZcactus'},{{'lightred','lightcactus'},{'AZred','AZcactus'}});
             leg = {'Active','Sequential'};
             pt.setcompareidx('info_session',[2 1],{'Active','Sequential'});
@@ -96,7 +98,7 @@ for analysisi = [1:1:10]
             pt.ispairedttest = [true false];
             pt.temp_sigstar_y_direction = [-1, 1];
         case 10 % within - sequential order
-            pt.setupexpwithin('18F018', [], []);
+            pt.setupexpwithin({'18F018','18F037'}, [], []);
             leg = {{'Active', 'Sequential'},{'a1','s1'}};
             pt.setparameter(0, 1, fullfile(savedir,'active_sequential_order'), 'sequential_ordereffect')
             pt.setupcolorn({'AZred','lightred','lightcactus','AZcactus'},{{'AZred','lightred','lightcactus','AZcactus'},{'AZred','lightred','lightcactus','AZcactus'}});
@@ -115,9 +117,6 @@ for analysisi = [1:1:10]
             pt.ispairedttest = [true false];
             pt.temp_sigstar_y_direction = [-1, 1];
     end
-    pt.line_disagreen;
-    pt.line_switchn;
-    pt.line_bypatternn;
     pt.sethardlim([],mylim.modelfree);
     pt.line_modelfreen;
     pt.sethardlim([],mylim.trialn);
@@ -127,6 +126,9 @@ for analysisi = [1:1:10]
     pt.sethardlim([],mylim.trialn([3,4]));
     pt.plot_trialn_hilm;
     pt.plot_choicecurven;
+    pt.line_disagreen;
+    pt.line_switchn;
+    pt.line_bypatternn;
 end
 %%
 pt.setupexpwithin('18F018', [], []);

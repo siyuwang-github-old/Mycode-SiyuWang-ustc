@@ -1,4 +1,4 @@
-classdef horizon < SiyuLatex
+classdef horizon < SiyuLatex & SiyuPlots
     properties
         data_gp
         temp_gp
@@ -13,7 +13,8 @@ classdef horizon < SiyuLatex
     end
     methods
         function obj = horizon()
-            obj.load_data_gp(fullfile(obj.siyupathdatamat,'data_horizon_gpindmeasure.mat'));
+            obj.load_data_gp;
+            obj.load_data;
             obj.exps = unique(obj.data_gp.info_exp);
             obj.n_exp = length(obj.exps);
             obj.acthres = 0;
@@ -25,6 +26,9 @@ classdef horizon < SiyuLatex
             obj.data = importdata(filename);
         end
         function load_data_gp(obj, filename)
+            if ~exist('filename')
+                filename = fullfile(obj.siyupathdatamat,'data_horizon_gpindmeasure.mat');
+            end
             te = importdata(filename);
             obj.data_gp = te.gp;
             obj.temp_gp = obj.data_gp;
@@ -148,6 +152,9 @@ classdef horizon < SiyuLatex
                 idx_session = arrayfun(@(x)SiyuTools.iif(isnan(x), false, x == 1), gp.info_session);
             end
             idx_ac = gp.trialn(2).ac(:,10) > obj.acthres;
+            if obj.acthres > 0
+                str = [str '_' num2str(round(obj.acthres*100))];
+            end
             idx_input = idx & idx_active & idx_age & idx_session & idx_delaytime & idx_ac;
             obj.setupgroup(idx_input);
             obj.savesuffix = str;
@@ -191,6 +198,9 @@ classdef horizon < SiyuLatex
             idx_both = arrayfun(@(x)sum(tt == x) == 2, tt);
             idx_ac = arrayfun(@(x)obj.iif(isnan(x),1,min(gp.trialn(2).ac(tt == x,10))> obj.acthres), tt,'UniformOutput',false);
             idx_ac = [idx_ac{:}]';
+            if obj.acthres > 0
+                str = [str '_' num2str(round(obj.acthres*100))];
+            end
             if exist('idx_special')
                 idx_input = idx & idx_active & idx_age & idx_both & idx_special ;
             else
@@ -302,7 +312,7 @@ classdef horizon < SiyuLatex
             d.RT6 = gp.trialn(2).RT(:,5:10);
             save(savename, 'd');
         end
-        function save4MCMC(obj, bayessavename, modelname)
+        function save4MCMC(obj, modelname)
             data = obj.temp_data;
             switch modelname
                 case 'learningmodel'
@@ -327,7 +337,24 @@ classdef horizon < SiyuLatex
                             end
                         end
                     end
-                
+                case '2noisemodel'
+                    bayesdata.nHorizon = 2;
+                    bayesdata.nSubject = length(data);
+                    nT = arrayfun(@(x)x.game.n_game, data);
+                    LEN = max(nT);
+                    bayesdata.nForcedTrials = 4;
+                    for si = 1:bayesdata.nSubject
+                        gd = data(si).game;
+                        nT = gd.n_game;
+                        bayesdata.nTrial(si,1) = nT;
+                        bayesdata.dM4(si,:) = obj.getcolumn(gd.dfR4_empirical',LEN);
+                        bayesdata.horizon(si,:) = obj.getcolumn(ceil(gd.cond_horizon'/5), LEN);
+                        bayesdata.dInfo(si,:) = obj.getcolumn(gd.cond_info',LEN);
+                        bayesdata.c5(si,:) = obj.getcolumn((gd.key(:,5)' == 1) + 0,LEN);
+                        [~, ~, ranking] = unique(gd.repeat_id);
+                        bayesdata.ngID(si) = max(ranking);
+                        bayesdata.gID(si,:) = obj.getcolumn(ranking',LEN);
+                    end
                 case 'simplemodel'
                     bayesdata.nHorizon = 2;
                     bayesdata.nSubject = length(data);
@@ -347,7 +374,7 @@ classdef horizon < SiyuLatex
                         end
                     end
             end
-            save(fullfile(obj.siyupathdatabayes, [bayessavename '_' modelname]),'bayesdata','modelname');
+            save(fullfile(obj.siyupathdatabayes, [obj.savename '_' modelname obj.savesuffix]),'bayesdata','modelname');
         end
     end
 end

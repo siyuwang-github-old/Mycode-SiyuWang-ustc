@@ -42,8 +42,10 @@ classdef SiyuBasicPlots < SiyuPlotStats
                 eb.CapSize = obj.ebcapsize;
                 obj.leglist(end + 1) = eb;
             end
-            maxy = max(av(:)+err(:));
-            miny = min(av(:)-err(:));
+            maxy = max(av + err);
+            miny = min(av - err);
+%             maxy = max(av(:)+err(:));
+%             miny = min(av(:)-err(:));
             if obj.yisfixx
                 obj.yceilingfixx = max(vertcat(obj.yceilingfixx, maxy),[],1);
                 obj.yfloorfixx = min(vertcat(obj.yfloorfixx, miny),[],1);
