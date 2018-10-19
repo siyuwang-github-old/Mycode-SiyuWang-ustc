@@ -342,7 +342,7 @@ classdef horizon < SiyuLatex & SiyuPlots
                     bayesdata.nSubject = length(data);
                     nT = arrayfun(@(x)x.game.n_game, data);
                     LEN = max(nT);
-                    bayesdata.nForcedTrials = 4;
+%                     bayesdata.nForcedTrials = 4;
                     for si = 1:bayesdata.nSubject
                         gd = data(si).game;
                         nT = gd.n_game;
