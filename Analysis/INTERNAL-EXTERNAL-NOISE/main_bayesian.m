@@ -1,9 +1,17 @@
 close all, clear all, clc;
 %%
+isfake = true;
 sh = Siyuhandle;
 fs = dir(fullfile(sh.siyupathdatabayes, 'intext_2noisemodel_a_18_smix*'));
+idfake = arrayfun(@(x)~isempty(strfind(x.name, 'fake')), fs);
+fs = SiyuTools.iif(isfake, fs(idfake), fs(~idfake));
+path = Siyuhandle;
 %%
 for fi = 1:length(fs)
+if exist(fullfile(path.siyupathresultbayes, [fs(fi).name(1:end-4), '_bayesresult.mat']))
+    warning('files found, skipped');
+    continue;
+end
 %%
 abe = analysis_bayesian(fs(fi).name);
 %%
