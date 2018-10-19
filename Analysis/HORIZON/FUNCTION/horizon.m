@@ -76,7 +76,7 @@ classdef horizon < SiyuLatex & SiyuPlots
                                         end
                                         ttgp = setfield(ttgp, nfs{nii}, te);
                                     catch
-                                            
+                                        
                                     end
                                 end
                                 tgp.rcurve.(oname)(hi,ni) = ttgp;
@@ -176,8 +176,8 @@ classdef horizon < SiyuLatex & SiyuPlots
                     idx_active = cellfun(@(x)strcmp('Passive', x), gp.cond_exp);
                 end
             else
-                  str = [str '_ap'];
-                  idx_active = cellfun(@(x)true, gp.cond_exp);
+                str = [str '_ap'];
+                idx_active = cellfun(@(x)true, gp.cond_exp);
             end
             if ~exist('isage') || isempty(isage)
                 idx_age = arrayfun(@(x)true, gp.demo_age);
@@ -205,7 +205,7 @@ classdef horizon < SiyuLatex & SiyuPlots
                 idx_input = idx & idx_active & idx_age & idx_both & idx_special ;
             else
                 idx_input = idx & idx_active & idx_age & idx_both ;
-            end   
+            end
             idx_input = idx_input & idx_ac;
             obj.setupgroup(idx_input);
             obj.savesuffix = str;
@@ -214,9 +214,9 @@ classdef horizon < SiyuLatex & SiyuPlots
             if ~iscell(fvalues)
                 fvalues = {fvalues};
             end
-%             if ~iscell(fvalues{1})
-%                 fvalues = {fvalues};
-%             end
+            %             if ~iscell(fvalues{1})
+            %                 fvalues = {fvalues};
+            %             end
             if ~iscell(fnames)
                 fnames = {fnames};
             end
@@ -246,7 +246,7 @@ classdef horizon < SiyuLatex & SiyuPlots
                 else
                     ffunc = [];
                 end
-                if isempty(ffunc) 
+                if isempty(ffunc)
                     ffunc = @(x)x;
                 end
                 %                 id = [];
@@ -312,8 +312,9 @@ classdef horizon < SiyuLatex & SiyuPlots
             d.RT6 = gp.trialn(2).RT(:,5:10);
             save(savename, 'd');
         end
-        function save4MCMC(obj, modelname)
+        function save4MCMC(obj, modelname, isfake)
             data = obj.temp_data;
+            bayessuffix = '';
             switch modelname
                 case 'learningmodel'
                     bayesdata.nHorizon = 2;
@@ -342,9 +343,23 @@ classdef horizon < SiyuLatex & SiyuPlots
                     bayesdata.nSubject = length(data);
                     nT = arrayfun(@(x)x.game.n_game, data);
                     LEN = max(nT);
-%                     bayesdata.nForcedTrials = 4;
+                    %                     bayesdata.nForcedTrials = 4;
                     for si = 1:bayesdata.nSubject
                         gd = data(si).game;
+                        if(exist('isfake') && strcmp('2noise',isfake)) 
+                            fileresult =  fullfile(obj.siyupathresultbayes, [obj.savename '_' modelname obj.savesuffix '_bayesresult.mat']);
+                            if exist(fileresult)
+                                bayesresult = importdata(fileresult);
+                                As = bayesresult.stats.mean.As(:,bayesdata.nSubject);
+                                bs = bayesresult.stats.mean.bs(:,bayesdata.nSubject);
+                                nints = bayesresult.stats.mean.dNs(:,bayesdata.nSubject);
+                                nexts = bayesresult.stats.mean.Eps(:,bayesdata.nSubject);
+                                gd = obj.shufflerepeatedgames(gd, As, bs, nints, nexts);
+                                bayessuffix = ['_fake_' datestr(now,30)];
+                            else
+                                warning('no bayes result found, can''t shuffle data');
+                            end
+                        end
                         nT = gd.n_game;
                         bayesdata.nTrial(si,1) = nT;
                         bayesdata.dM4(si,:) = obj.getcolumn(gd.dfR4_empirical',LEN);
@@ -374,7 +389,35 @@ classdef horizon < SiyuLatex & SiyuPlots
                         end
                     end
             end
-            save(fullfile(obj.siyupathdatabayes, [obj.savename '_' modelname obj.savesuffix]),'bayesdata','modelname');
+            save(fullfile(obj.siyupathdatabayes, [obj.savename '_' modelname obj.savesuffix bayessuffix]),'bayesdata','modelname');
+        end
+        function game = shufflerepeatedgames(obj, game, As, bs, nints, nexts)
+            [~,~,ranking] = unique(game.repeat_id);
+            mr = max(ranking);
+            n_fixed = NaN(1, mr);
+            si = 1;
+            for gi = 1:game.n_game
+                hi = round(game.cond_horizon(gi)/5);
+                A = As(hi, si);
+                b = bs(hi, si);
+                nint = nints(hi, si);
+                next = nexts(hi, si);
+                dM = game.dfR4_empirical(gi);
+                dI = game.cond_info(gi);
+                pdni = makedist('Logistic',0, sqrt(2)*nint);
+                dni = random(pdni);
+                if isnan(n_fixed(ranking(gi)))
+                    pdne = makedist('Logistic',0, sqrt(2)*next);
+                    n_fixed(ranking(gi)) = random(pdne);
+                end
+                dne = n_fixed(ranking(gi));
+                dQ = dM + A * dI + b + dne + dni;
+                if dQ > 0
+                    game.key(gi,5) = 1;
+                else
+                    game.key(gi,5) = -1;
+                end
+            end
         end
     end
 end

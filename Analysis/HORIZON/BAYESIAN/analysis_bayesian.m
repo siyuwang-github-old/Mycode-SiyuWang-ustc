@@ -18,9 +18,10 @@ classdef analysis_bayesian < Siyuhandle
     end
     methods
         function obj = analysis_bayesian(filename)
+            filename = SiyuTools.iif(~isempty(strfind(filename, '.mat')),filename(1:end-4),[filename]);
             obj.filename = filename;
             dd = load(fullfile(obj.siyupathdatabayes, ...
-                SiyuTools.iif(~isempty(strfind(filename, '.mat')),filename,[filename '.mat'])...
+                [filename '.mat']...
                 ));
             obj.poolobj = [];
             obj.data = dd.bayesdata;
