@@ -3,7 +3,7 @@ close all, clear all, clc;
 pt = plot_horizon();
 savefolder = 'Internal_external_noise';
 pt.setparameter(0,1,savefolder, 'intext')
-acs = [0, 0.55, 0.6, 0.65];
+acs = [0, 0.55, 0.6, 0.65, -0.01];
 %%
 order = [2 1];
 lmt.p1{1}(order) = {[0.35 0.65],[0.1,0.4]};
@@ -27,7 +27,8 @@ for aci = 1:length(acs)
     pt.anova_p_da;
 end
 %%
-isfake = '2noise';
+isfake = false;
+% isfake = '2noise';
 for aci = 1:length(acs)
     pt.acthres = acs(aci);
     pt.setupexps('16S075',1,1,[],[]);

@@ -151,11 +151,39 @@ classdef horizon < SiyuLatex & SiyuPlots
                 str = [str '_s1'];
                 idx_session = arrayfun(@(x)SiyuTools.iif(isnan(x), false, x == 1), gp.info_session);
             end
-            idx_ac = gp.trialn(2).ac(:,10) > obj.acthres;
-            if obj.acthres > 0
-                str = [str '_' num2str(round(obj.acthres*100))];
+            idx_input = idx & idx_active & idx_age & idx_session & idx_delaytime;
+            if obj.acthres >= 0
+                if obj.acthres > 0
+                    str = [str '_' num2str(round(obj.acthres*100))];
+                end
+                idx_ac = gp.trialn(2).ac(:,10) > obj.acthres;
+            else
+                acth = -obj.acthres;
+                str = [str '_acp' num2str(round(abs(log(acth)/log(acth))*100))];
+                nt = gp.num_game;
+                warning off;
+                chanchecktable.nt = [];
+                chanchecktable.p = [];
+                for ci = 1:length(nt)
+                    if idx_input(ci) == 0
+                        chans(ci) = 0;
+                        continue;
+                    end
+                    tidx = find(ismember(chanchecktable.nt, nt(ci)));
+                    if isempty(tidx)
+                        chans(ci) = obj.chancexp(nt(ci), acth);
+                        chanchecktable.nt = [chanchecktable.nt nt(ci)];
+                        chanchecktable.p = [chanchecktable.p chans(ci)];
+                    elseif length(tidx) == 1
+                        chans(ci) = chanchecktable.p(tidx);
+                    else
+                        error('weird');
+                    end
+                end
+                warning on;
+                idx_ac = gp.trialn(2).ac(:,10) > chans';
             end
-            idx_input = idx & idx_active & idx_age & idx_session & idx_delaytime & idx_ac;
+            idx_input = idx_input & idx_ac;
             obj.setupgroup(idx_input);
             obj.savesuffix = str;
         end

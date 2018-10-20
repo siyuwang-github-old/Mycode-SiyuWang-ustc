@@ -3,6 +3,11 @@ classdef SiyuTools < Siyuhandle
     end
     methods
         function obj = SiyuTools()
+            
+        end
+        function x = chancexp(obj, n, p)
+            ps = arrayfun(@(x)nchoosek(n,x)/2^n, 1:n);
+            x = sum(cumsum(ps) <= 1-p)/n;
         end
     end
     methods(Static)
