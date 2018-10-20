@@ -3,12 +3,14 @@ classdef plot_bayesian < plot_horizonn
         samples
         stats
         time_bayesianfit
+        modelname
     end
     methods
         function obj = plot_bayesian()
         end
         function loadbayes(obj, modelname, issample)
             disp('loading stats');
+            obj.modelname = modelname;
             files = dir(fullfile(obj.siyupathresultbayes,[obj.savename '_' modelname...
                 obj.savesuffix '_bayesresult.mat']));
             for fi = 1:length(files)
@@ -80,8 +82,10 @@ classdef plot_bayesian < plot_horizonn
                 ylabel('external noise');
             end
         end
-        function plot_recovery(obj, fakename, roname)
-            obj.fake = importdata(fakename);
+        function plot_recovery_2noise(obj, roname)
+            files = dir(fullfile(obj.siyupathresultbayes,[obj.savename '_' obj.modelname...
+                obj.savesuffix '_fake*_bayesresult.mat']));
+            obj.fake = importdata();
             m1 = obj.stats.stats.mean;
             m2 = obj.fake.stats.mean;
             if exist('roname') ~= 1
@@ -586,7 +590,7 @@ classdef plot_bayesian < plot_horizonn
                 if i == 3
                     xlabel('noise standard deviation [points]');
                 else
-                    set(gca,'xticklabel',{[]})
+%                     set(gca,'xticklabel',{[]})
                     
                 end
                 obj.title(names{i});
@@ -621,7 +625,7 @@ classdef plot_bayesian < plot_horizonn
                 if i == 3
                     xlabel('noise standard deviation [points]')
                 else
-                    set(gca,'xticklabel',{[]})
+%                     set(gca,'xticklabel',{[]})
                     
                 end
             end

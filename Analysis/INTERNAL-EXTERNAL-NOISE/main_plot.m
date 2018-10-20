@@ -27,8 +27,8 @@ for aci = 1:length(acs)
     pt.anova_p_da;
 end
 %%
-isfake = false;
-% isfake = '2noise';
+% isfake = false;
+isfake = '2noise';
 for aci = 1:length(acs)
     pt.acthres = acs(aci);
     pt.setupexps('16S075',1,1,[],[]);
