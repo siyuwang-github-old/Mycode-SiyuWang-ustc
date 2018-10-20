@@ -1,6 +1,6 @@
 close all, clear all, clc;
 %%
-isfake = true;
+isfake = false;
 sh = Siyuhandle;
 fs = dir(fullfile(sh.siyupathdatabayes, 'intext_2noisemodel_a_18_smix*'));
 idfake = arrayfun(@(x)~isempty(strfind(x.name, 'fake')), fs);
