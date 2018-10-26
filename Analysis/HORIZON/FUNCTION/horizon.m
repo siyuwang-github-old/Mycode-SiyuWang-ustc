@@ -419,7 +419,7 @@ classdef horizon < SiyuLatex & SiyuPlots
             end
             save(fullfile(obj.siyupathdatabayes, [obj.savename '_' modelname obj.savesuffix bayessuffix]),'bayesdata','modelname');
         end
-        function game = shufflerepeatedgames(obj, game, As, bs, nints, nexts)
+        function game = shufflerepeatedgames(obj, game, As, bs, nints, nexts) % wrong name, should be simulate
             [~,~,ranking] = unique(game.repeat_id);
             mr = max(ranking);
             n_fixed = NaN(1, mr);

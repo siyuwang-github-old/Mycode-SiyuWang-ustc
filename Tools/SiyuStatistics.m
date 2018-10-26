@@ -70,7 +70,7 @@ classdef SiyuStatistics < SiyuTools
             end
         end
 
-        function out = untitled_correlation(obj, x, y)
+        function out = old_correlation(obj, x, y)
             x = reshape(x,[],1);
             y = reshape(y,[],1);
             [r,p] = corr(x,y);

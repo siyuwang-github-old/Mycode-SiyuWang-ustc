@@ -89,6 +89,25 @@ classdef SiyuPlots < SiyuBasicPlots
             end
             obj.legend(legs);
         end
+        function old_scatterdiag(obj, x, y, color, str, scalefactor)
+            if ~exist('scalefactor') || isempty(scalefactor)
+                scalefactor = 1;
+            end
+            obj.new;
+            hold on;
+            mi = min(min(x),min(y));
+            ma = max(max(x),max(y));
+            mi = mi - (ma-mi) * 0.1;
+            ma = ma + (ma-mi) * 0.1;
+            plot([mi, ma],[mi ma],'--k','LineWidth', obj.linewidth*scalefactor);
+            sp = scatter(x, y, obj.dotsize*scalefactor, color, 'filled');
+            obj.leglist = sp;
+            stat = obj.old_correlation(x, y);
+            obj.lim([mi,ma],[mi,ma])
+            set(gca, 'tickdir', 'out');
+            obj.text(mi+0.05*(ma-mi), mi+0.9*(ma-mi), [str,', ', stat.str]);
+        end
+
         function lineplot_bin(obj, data, x, xbins)
             if ~obj.holdon
                 obj.new;

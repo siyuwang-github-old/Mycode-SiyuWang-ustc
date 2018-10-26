@@ -83,54 +83,56 @@ classdef plot_bayesian < plot_horizonn
             end
         end
         function plot_recovery_2noise(obj, roname)
-            files = dir(fullfile(obj.siyupathresultbayes,[obj.savename '_' obj.modelname...
+            files = dir(fullfile(obj.siyupathresultbayes,[obj.savename '_' obj.modelname ...
                 obj.savesuffix '_fake*_bayesresult.mat']));
-            obj.fake = importdata();
-            m1 = obj.stats.stats.mean;
-            m2 = obj.fake.stats.mean;
-            if exist('roname') ~= 1
-                idx = 1:size(m1.dNints,2);
-            else
-                idx = importdata(roname);
-                idx = idx.ro;
+            m1 = obj.stats.twonoisemodel.mean;
+            for fi = 1:length(files)
+                fake = importdata(fullfile(files(fi).folder, files(fi).name));
+                m2 = fake.stats.mean;
+                if exist('roname') ~= 1
+                    idx = 1:size(m1.dNints,2);
+                else
+                    idx = importdata(roname);
+                    idx = idx.ro;
+                end
+                names = {'A','b', '\sigma_{int}', '\sigma_{ext}'};
+                color = 'k';
+                obj.figure(4,2);
+                obj.fontsize_face = obj.fontsize_face/2;
+%                 obj.fontsize_leg = obj.fontsize_leg/2;
+                for hi = 1:2
+                    obj.old_scatterdiag(m1.As(hi,idx), m2.As(hi,:), color, names{1},1/4);
+                    xlabel('Simulated A');
+                    ylabel('Fit A');
+                    %                 set(gca, 'XTickLabel', {[]});
+                end
+                for hi = 1:2
+                    obj.old_scatterdiag(m1.bs(hi,idx), m2.bs(hi,:), color, names{2},1/4);
+                    xlabel('Simulated b');
+                    ylabel('Fit b');
+                    %                 set(gca, 'XTickLabel', {[]});
+                end
+                for hi = 1:2
+                    obj.old_scatterdiag(m1.dNs(hi,idx), m2.dNs(hi,:), color, names{3},1/4);
+                    xlabel('Simulated \sigma^{int}');
+                    ylabel('Fit \sigma^{int}');
+                    %                 set(gca, 'XTickLabel', {[]});
+                end
+                for hi = 1:2
+                    obj.old_scatterdiag(m1.Eps(hi,idx), m2.Eps(hi,:), color, names{4},1/4);
+                    xlabel('Simulated \sigma^{ext}');
+                    ylabel('Fit \sigma^{ext}');
+                    %                 set(gca, 'XTickLabel', {[]});
+                end
+                obj.fontsize_face = obj.fontsize_face*2;
+%                 obj.fontsize_leg = obj.fontsize_leg*2;
+                %             obj.addABCs([],[],15);
+                %             [~, pos] = obj.addABCs([],[],15, '        ');
+                o1 = 0.02+[0.010, 0.010, 0.010, -0.006, 0.004, 0, -0.005, 0]';
+                o2 = zeros(8,1) + 0.02;
+                obj.BobaddABCs([], [o1 o2], 15);
+%                 obj.save('precover');
             end
-            names = {'A','b', '\sigma_{int}', '\sigma_{ext}'};
-            color = 'k';
-            obj.figure(4,2);
-            obj.fontsize_face = obj.fontsize_face/2;
-            obj.fontsize_leg = obj.fontsize_leg/2;
-            for hi = 1:2
-                obj.scatterdiag(m1.As(hi,idx), m2.As(hi,:), color, names{1},1/4);
-                xlabel('Simulated A');
-                ylabel('Fit A');
-                %                 set(gca, 'XTickLabel', {[]});
-            end
-            for hi = 1:2
-                obj.scatterdiag(m1.bs(hi,idx), m2.bs(hi,:), color, names{2},1/4);
-                xlabel('Simulated b');
-                ylabel('Fit b');
-                %                 set(gca, 'XTickLabel', {[]});
-            end
-            for hi = 1:2
-                obj.scatterdiag(m1.dNs(hi,idx), m2.dNs(hi,:), color, names{3},1/4);
-                xlabel('Simulated \sigma^{int}');
-                ylabel('Fit \sigma^{int}');
-                %                 set(gca, 'XTickLabel', {[]});
-            end
-            for hi = 1:2
-                obj.scatterdiag(m1.Eps(hi,idx), m2.Eps(hi,:), color, names{4},1/4);
-                xlabel('Simulated \sigma^{ext}');
-                ylabel('Fit \sigma^{ext}');
-                %                 set(gca, 'XTickLabel', {[]});
-            end
-            obj.fontsize_face = obj.fontsize_face*2;
-            obj.fontsize_leg = obj.fontsize_leg*2;
-            %             obj.addABCs([],[],15);
-            %             [~, pos] = obj.addABCs([],[],15, '        ');
-            o1 = 0.02+[0.010, 0.010, 0.010, -0.006, 0.004, 0, -0.005, 0]';
-            o2 = zeros(8,1) + 0.02;
-            obj.addABCs([], [o1 o2], 15);
-            obj.save('precover');
         end
         function plot_subjects(obj)
             stats = obj.stats;

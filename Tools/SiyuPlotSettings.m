@@ -117,8 +117,14 @@ classdef SiyuPlotSettings < Siyuhandle
             obj.figsizet{1,3} = [0.02 0.15 0.96 0.7];
             obj.figmargint{1,3} = [0.15, 0.07, 0.1, 0.02];
             obj.figgap{1,3} = [0.06 0.1];
-            
             obj.fontsize_leg{1,3} = 10;
+            obj.figsize{4,2} = [0.15 0.02 0.4 0.95];
+            obj.figmargin{4,2} = [0.1, 0.1, 0.05, 0.05];
+            obj.figgap{4,2} = [0.1 0.1];
+            obj.figsizet{4,2} = [0.15 0.02 0.4 0.95];
+            obj.figmargint{4,2} = [0.1, 0.1, 0.05, 0.05];
+            obj.figgapt{4,2} = [0.1 0.1];
+            obj.fontsize_leg{4,2} = 10;
 
             obj.fontsize_face = 20;
             obj.temp_fontsize_leg = obj.fontsize_leg{1,1};
@@ -206,6 +212,9 @@ classdef SiyuPlotSettings < Siyuhandle
             if (exist('y')==1) && ~isempty(y)
                 ylim(y);
             end
+        end
+        function text(obj, x, y, str)
+            text(x,y,str,'FontSize',obj.temp_fontsize_leg);
         end
         function label(obj, xlab, ylab, legs, legorder)
             obj.xlabel(xlab);
