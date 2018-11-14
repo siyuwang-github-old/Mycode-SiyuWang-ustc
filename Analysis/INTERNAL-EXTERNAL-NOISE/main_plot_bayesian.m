@@ -3,8 +3,14 @@ clear all, close all, clc;
 pb = plot_bayesian;
 pb.setparameter(1, 1, 'Internal_external_noise','intext')
 %%
-acs = [-0.01 0 0.55 0.6 0.65];
+% acs = [-0.01 0 0.55 0.6 0.65];
+acs = -0.01;
 for aci = 1:length(acs)
+%     if acs(aci) == 0
+%         pt.legsuffix = ', all subjects';
+%     else
+        pt.legsuffix = '';
+%     end
 pb.acthres = acs(aci);
 pb.setupexps('16S075', 1,1,[], []); % why are there 4 matched participants if i do setexpwithin?
 %%
@@ -12,7 +18,7 @@ pb.loadbayes('2noisemodel',1);
 %%
 pb.plot_hyperpriors_2noise([-1 22 -3 13],[0 4 20 -3 3 12]);
 %%
-pb.plot_recovery_2noise();
+% pb.plot_recovery_2noise();
 end
 %%
 % pb.plot_corrbehavior;

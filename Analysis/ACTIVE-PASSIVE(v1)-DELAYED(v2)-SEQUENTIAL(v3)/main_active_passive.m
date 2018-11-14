@@ -9,7 +9,10 @@ savedir = 'Active_passive_sequential';
 %% active vs passive
 clc;
 % analysisrange = [1:1:10];
-analysisrange = [8 9 10];
+% analysisrange = [8 9 10];
+analysisrange = [1 3];
+whattodos = {'savedata','plotting'};
+whattodo = [1];
 for analysisi = analysisrange
     switch analysisi
         case 1 % within - active vs passive(no delay)
@@ -117,18 +120,29 @@ for analysisi = analysisrange
             pt.ispairedttest = [true false];
             pt.temp_sigstar_y_direction = [-1, 1];
     end
-    pt.sethardlim([],mylim.modelfree);
-    pt.line_modelfreen;
-    pt.sethardlim([],mylim.trialn);
-    pt.plot_trialnsn;
-    pt.sethardlim([],mylim.trialn([1,2]));
-    pt.plot_trialn_acRT;
-    pt.sethardlim([],mylim.trialn([3,4]));
-    pt.plot_trialn_hilm;
-    pt.plot_choicecurven;
-    pt.line_disagreen;
-    pt.line_switchn;
-    pt.line_bypatternn;
+    for whattodoi = whattodo
+        switch whattodos{whattodoi}
+            case 'savedata'
+                if analysisi == 1
+                    pt.savedatacsv('order');
+                else
+                    pt.savedatacsv;
+                end
+            case 'plotting'
+                pt.sethardlim([],mylim.modelfree);
+                pt.line_modelfreen;
+                pt.sethardlim([],mylim.trialn);
+                pt.plot_trialnsn;
+                pt.sethardlim([],mylim.trialn([1,2]));
+                pt.plot_trialn_acRT;
+                pt.sethardlim([],mylim.trialn([3,4]));
+                pt.plot_trialn_hilm;
+                pt.plot_choicecurven;
+                pt.line_disagreen;
+                pt.line_switchn;
+                pt.line_bypatternn;
+        end
+    end
 end
 %%
 pt.setupexpwithin('18F018', [], []);

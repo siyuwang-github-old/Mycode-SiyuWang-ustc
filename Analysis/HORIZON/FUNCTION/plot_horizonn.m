@@ -188,6 +188,7 @@ classdef plot_horizonn < plot_horizon
                 obj.temp_legloc = legloc{fi};
                 obj.label('free choice trial number', ylbs{fi}, leg);
                 obj.yautotick(1, ytks(fi))
+                set(gca, 'XTick', 1:6);
             end
             obj.BobaddABCs([],addabcindent);
             if ~isempty(savename)

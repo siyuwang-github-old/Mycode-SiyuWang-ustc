@@ -6,13 +6,14 @@ classdef SiyuBasicPlots < SiyuPlotStats
         end
         function scatter(obj, x, y, color)
             if (exist('color')~=1)
-                color = [];
+                color = obj.now_color;
             end
             if ~iscell(y)
                 y = {y};
             end
-            obj.new;
-            hold on;
+            if obj.holdon
+                hold on;
+            end
             legs = [];
             for yi = 1:length(y)
                 ty = reshape(y{yi},[],1);
@@ -31,15 +32,22 @@ classdef SiyuBasicPlots < SiyuPlotStats
                 x = 1:size(av, 2);
             end
             color = obj.now_color;
+            dotsize = obj.now_dotsize;
             hold on;
             for li = 1:size(av,1)
-                eb = errorbar(x, av(li,:), err(li,:), 'o-', ...
-                    'LineWidth', obj.eblinewidth);
+                if sum(abs(err(li,:))) == 0
+                    eb = plot(x, av(li,:), 'o-', ...
+                        'LineWidth', obj.eblinewidth);
+                    eb.MarkerSize = obj.ebcapsize;
+                else
+                    eb = errorbar(x, av(li,:), err(li,:), 'o-', ...
+                        'LineWidth', obj.eblinewidth);
+                    eb.CapSize = obj.ebcapsize;
+                end
                 if ~isempty(color) && length(color) == size(av,1)
                     eb.Color = color{li};
                     eb.MarkerFaceColor = color{li};
                 end
-                eb.CapSize = obj.ebcapsize;
                 obj.leglist(end + 1) = eb;
             end
             maxy = max(av + err);
@@ -47,8 +55,8 @@ classdef SiyuBasicPlots < SiyuPlotStats
 %             maxy = max(av(:)+err(:));
 %             miny = min(av(:)-err(:));
             if obj.yisfixx
-                obj.yceilingfixx = max(vertcat(obj.yceilingfixx, maxy),[],1);
-                obj.yfloorfixx = min(vertcat(obj.yfloorfixx, miny),[],1);
+                obj.yceilingfixx = max(horzcat(obj.yceilingfixx, maxy),[],1);
+                obj.yfloorfixx = min(horzcat(obj.yfloorfixx, miny),[],1);
             else
                 obj.yceilingfixx = maxy;
                 obj.yfloorfixx = miny;

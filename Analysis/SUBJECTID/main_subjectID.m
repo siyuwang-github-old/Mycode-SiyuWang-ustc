@@ -1,10 +1,13 @@
 close all, clear all, clc;
 %%
 pt = plot_subjectID();
+exps0 = pt.exps;
+exps = exps0([1 2 6 7 8 12 13]);
+pt.acthres = 0;
+savedir = 'SubjectID';
+pt.setupexps(exps, [], [], 1);
 %%
-isactive = 0;
-exps = pt.exps([1,2,6,7,8,13]);
-pt.setupexps(exps, isactive, 1, 1);
+pt.savetoshare('data_subID');
 %%
 pt.plot_daytimes;
 %%

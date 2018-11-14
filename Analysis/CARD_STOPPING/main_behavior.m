@@ -5,13 +5,23 @@ save = 1;
 show = 0;
 savefolder = 'Card_stopping';
 savename = '';
-s.setparameter(show, save, savefolder, savename);
+isppt = true;
+s.setparameter(show, save, savefolder, savename, isppt);
 %%
 clc;
 s.loadall(60);
 %%
-simu = 0;
-s.default_analysis(simu);
+s.temp_datai = 3;
+s.isoverwrite = false;
+s.default_analysis('h5');
+%%
+for si = 1:4
+    s.plot_choicecurves_bystep('full',si);
+end
+%%
+s.plot_mles('full');
+%%
+s.plot_fitvsreport;
 %%
 s.plot_choicecurves;
 s.plot_choicecurves_diff;
@@ -21,6 +31,11 @@ s.plot_choicecurve_h5;
 s.plot_mle;
 s.plot_mle_initial;
 s.plot_mle_h5;
+%%
+s.plot_choicecurve_full;
+s.plot_mle_full;
+%%
+s.plot_thresvsnoise;
 %%
 % s.tempthrs = [];
 % s.main_simulation;

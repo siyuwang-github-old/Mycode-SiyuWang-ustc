@@ -91,7 +91,8 @@ for ddii = 1:3
         if data(si).subID ~= td.subjectID
             error('subject ID mismatch');
         end
-        data(si).task = td.task;
+        data(si).taskraw = td.task;
+        data(si).task = formatgame(td.task);
         if isempty(td.demo.gender)
             td.demo.gender = 'NaN';
         elseif strcmp(td.demo.gender, 'female')

@@ -182,20 +182,37 @@ classdef SiyuTools < Siyuhandle
             % a(idx) = b;
             idx = arrayfun(@(x)SiyuTools.getcolumn(find(ismember(a, x)),1), b);
         end
-        function y = getcolumn(x, n) 
+        function y = getcolumn(x, n, option) 
             % extend columns with nans
             % exception 1: when there is 0 row, we flip row and column
             % exception 2: when there is 0 row and 0 column, we set the row
             % to be one
+            if ~exist('option')
+                option = 'right';
+            end
+            switch option
+                case 'left'
+                    option = 1;
+                case 'right'
+                    option = 2;
+            end
             if size(x,1) == 0 && size(x,2) ~= 0
                 x = x';
             end
             if size(x,1) == 0
                 y = nan(1,n);
             elseif size(x,2) < n
-                y = [x nan(size(x,1), n- size(x,2))];
+                if option == 2
+                    y = [x nan(size(x,1), n- size(x,2))];
+                elseif option == 1
+                    y = [nan(size(x,1), n- size(x,2)) x];
+                end
             else
-                y = x(:,1:n);
+%                 if option == 2
+                    y = x(:,1:n);
+%                 elseif option == 1
+%                     y = x(:,1:n);
+%                 end
             end
         end
         function d = addrow(d0, d1)

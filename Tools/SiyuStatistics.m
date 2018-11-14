@@ -16,13 +16,13 @@ classdef SiyuStatistics < SiyuTools
                 return;
             end
             nx = cellfun(@(x)size(x,2), gps);
-%             if length(unique(nx)) > 1
-%                 stats = [];
-%                 error('number of columns mismatch for anova')
-%                 return;
-%             else
-%                 nx = unique(nx);
-%             end
+            %             if length(unique(nx)) > 1
+            %                 stats = [];
+            %                 error('number of columns mismatch for anova')
+            %                 return;
+            %             else
+            %                 nx = unique(nx);
+            %             end
             nx = unique(nx);
             maxx = max(nx);
             minx = min(nx);
@@ -44,11 +44,11 @@ classdef SiyuStatistics < SiyuTools
                     stats(2,xi) = NaN;
                 end
             end
-%             stats = obj.extendnan(stats, maxx);
+            %             stats = obj.extendnan(stats, maxx);
         end
-
+        
         function stars1 = getstatstars(obj, p0, nons)
-            if ~exist('nons') 
+            if ~exist('nons')
                 nons = 'n.s.';
             end
             for i = 1:size(p0,1)
@@ -69,23 +69,36 @@ classdef SiyuStatistics < SiyuTools
                 end
             end
         end
-
+        
         function out = old_correlation(obj, x, y)
             x = reshape(x,[],1);
             y = reshape(y,[],1);
-            [r,p] = corr(x,y);
-            out.r = r;
-            out.r2 = r*r;
-            out.p = p;
-%             out.str = sprintf('R^2 = %.2f, p  = %.2g',out.r2,p);
-            out.str = sprintf('R = %.2f, p  = %.2g',out.r,p);
+            id = ~isnan(x) & ~isnan(y);
+            x = x(id);
+            y = y(id);
+            if ~isempty(x)
+                [r,p] = corr(x,y);
+                out.r = r;
+                out.r2 = r*r;
+                out.p = p;
+                %             out.str = sprintf('R^2 = %.2f, p  = %.2g',out.r2,p);
+                out.str = sprintf('R = %.2f, p  = %.2g',out.r,p);
+            else
+                r = NaN;
+                p = NaN;
+                out.r = r;
+                out.r2 = r*r;
+                out.p = p;
+                %             out.str = sprintf('R^2 = %.2f, p  = %.2g',out.r2,p);
+                out.str = sprintf('R = NaN, p  = NaN');
+            end
         end
         
         function out = untitled_regression(obj, x, y)
             x = reshape(x,[],1);
             y = reshape(y,[],1);
             [r,m,b] = regression(x',y');
-            out = obj.untitled_correlation(x,y);
+            out = obj.old_correlation(x,y);
             out.m = m;
             out.b = b;
             out.x = x;
@@ -109,6 +122,6 @@ classdef SiyuStatistics < SiyuTools
             out.df = stat.df;
             out.str = sprintf('t(%d) = %.2f, p = %.3g', out.df, out.t, out.p);
         end
-
+        
     end
 end

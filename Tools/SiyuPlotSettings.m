@@ -15,10 +15,12 @@ classdef SiyuPlotSettings < Siyuhandle
         fontsize_axes
         linewidth
         dotsize
+        now_dotsize
         ebcapsize
         eblinewidth
         savedir
         savesuffix
+        legsuffix
         savename
         isbold
         temp_gf
@@ -37,6 +39,7 @@ classdef SiyuPlotSettings < Siyuhandle
         yisfixx
         yceilingfixx
         yfloorfixx
+        isppt
     end
     methods
         function obj = SiyuPlotSettings()
@@ -45,11 +48,25 @@ classdef SiyuPlotSettings < Siyuhandle
             obj.temp_gf = [];
             obj.holdon = false;
             obj.now_color = [];
+            obj.now_dotsize = [];
             obj.hardxlim = {};
             obj.hardylim = {};
+            obj.legsuffix = '';
             obj.setparameter_plotdefault;
         end
-        function setparameter(obj, isshow, issave, savedir, savename)
+        function setparameter(obj, isshow, issave, savedir, savename, isppt)
+            obj.setparameter_plotdefault;
+            if exist('isppt') & isppt
+                obj.isppt = true;
+                obj.fontsize_face = 30;
+                obj.temp_fontsize_leg = round(obj.fontsize_leg{1,1}*1.5);
+                obj.fontsize_axes = 30;
+                obj.linewidth = 4;
+                obj.dotsize = 7;
+                obj.ebcapsize = 7;
+                obj.eblinewidth = 2;
+                savename = [savename '_ppt'];
+            end
             if issave
                 obj.savedir = fullfile(obj.siyupathfigure, savedir);
                 obj.savename = savename;
@@ -61,7 +78,7 @@ classdef SiyuPlotSettings < Siyuhandle
             if isempty(obj.temp_gf) || (obj.temp_axi >= length(obj.temp_axes))
                 obj.figure;
             end
-            if (obj.holdon)
+            if (obj.holdon && obj.temp_axi > 0)
                 set(obj.temp_gf, 'CurrentAxes', obj.temp_axes(obj.temp_axi));
                 hold on;
                 return;
@@ -94,12 +111,13 @@ classdef SiyuPlotSettings < Siyuhandle
             colors.white = [1 1 1];
             obj.colors = colors;
             obj.figsize{1,1} = [0.2 0.15 0.5 0.8];
-            obj.figmargin{1,1} = [0.15, 0.15, 0.05, 0.05];
+%             obj.figmargin{1,1} = [0.15, 0.15, 0.05, 0.05];
+            obj.figmargin{1,1} = [0.2, 0.15, 0.05, 0.05];
             obj.figgap{1,1} = [0.1 0.1];
             obj.fontsize_leg{1,1} = 18;
             obj.figsize{1,2} = [0.1 0.15 0.7 0.7];
             obj.figmargin{1,2} = [0.15, 0.1, 0.1, 0.05];
-            obj.figgap{1,2} = [0.1 0.1];
+            obj.figgap{1,2} = [0.15 0.15];
             obj.figsizet{1,2} = [0.1 0.15 0.7 0.7];
             obj.figmargint{1,2} = [0.15, 0.1, 0.1, 0.05];
             obj.figgapt{1,2} = [0.1 0.1];
@@ -147,7 +165,11 @@ classdef SiyuPlotSettings < Siyuhandle
             if (exist('ny')~=1) || isempty(ny) || ny < 1
                 ny = 1;
             end
-            obj.temp_fontsize_leg = obj.fontsize_leg{nx,ny};
+            if obj.isppt
+                obj.temp_fontsize_leg = round(obj.fontsize_leg{nx,ny}*1.5);
+            else
+                obj.temp_fontsize_leg = obj.fontsize_leg{nx,ny};
+            end
             if (exist('rect')~=1) || isempty(rect)
                 rect = SiyuTools.iif(istitle, obj.figsizet{nx,ny},obj.figsize{nx,ny});
             end
@@ -234,7 +256,7 @@ classdef SiyuPlotSettings < Siyuhandle
                 obj.temp_legloc = obj.legloc;
             end
             fontsize = obj.temp_fontsize_leg;
-            lgd = legend(obj.leglist(legorder),leg(legorder), 'Location', obj.temp_legloc);
+            lgd = legend(obj.leglist(legorder),cellfun(@(x)[x obj.legsuffix], leg(legorder), 'UniformOutput',false), 'Location', obj.temp_legloc);
             obj.leglist = [];
             if obj.legbox
                 legend('boxon')
@@ -251,7 +273,7 @@ classdef SiyuPlotSettings < Siyuhandle
         end
         function yautotick(obj, n, step)
             ytick = get(gca, 'YTick');
-            ydf = max(diff(ytick));
+            ydf = 0;%max(diff(ytick));
             set(gca, 'YTick', unique(round([ytick(1)-ydf],n):step:round(ytick(end)+ydf, n)));
         end
         function save(obj, filename)

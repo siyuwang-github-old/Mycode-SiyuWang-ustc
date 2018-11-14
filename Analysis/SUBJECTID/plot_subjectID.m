@@ -1,4 +1,4 @@
-classdef plot_subjectID < plot_horizon
+classdef plot_subjectID < plot_horizonn
     properties
     end
     methods

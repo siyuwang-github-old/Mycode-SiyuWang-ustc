@@ -89,23 +89,25 @@ classdef SiyuPlots < SiyuBasicPlots
             end
             obj.legend(legs);
         end
-        function old_scatterdiag(obj, x, y, color, str, scalefactor)
+        function old_scatterdiag(obj, x, y, color, scalefactor)
             if ~exist('scalefactor') || isempty(scalefactor)
                 scalefactor = 1;
             end
-            obj.new;
+            if ~obj.holdon
+                obj.new;
+            end
             hold on;
             mi = min(min(x),min(y));
             ma = max(max(x),max(y));
             mi = mi - (ma-mi) * 0.1;
             ma = ma + (ma-mi) * 0.1;
-            plot([mi, ma],[mi ma],'--k','LineWidth', obj.linewidth*scalefactor);
-            sp = scatter(x, y, obj.dotsize*scalefactor, color, 'filled');
+            plot([mi, ma],[mi ma],'--k','LineWidth', obj.linewidth*scalefactor/5);
+            sp = scatter(x, y, obj.dotsize*scalefactor*3, color, 'filled');
             obj.leglist = sp;
             stat = obj.old_correlation(x, y);
             obj.lim([mi,ma],[mi,ma])
             set(gca, 'tickdir', 'out');
-            obj.text(mi+0.05*(ma-mi), mi+0.9*(ma-mi), [str,', ', stat.str]);
+%             obj.text(mi+0.05*(ma-mi), mi+0.9*(ma-mi), [stat.str]);
         end
 
         function lineplot_bin(obj, data, x, xbins)
@@ -152,7 +154,7 @@ classdef SiyuPlots < SiyuBasicPlots
             obj.holdon = false;
             obj.temp_starloc = obj.starloc;
         end
-        function line2(obj, data)
+        function out = line2(obj, data)
             [av] = obj.lineplot_raw(data);
             if obj.isplotstar
                 data = SiyuTools.iif(iscell(data), data, {data});
@@ -162,7 +164,7 @@ classdef SiyuPlots < SiyuBasicPlots
                     di = obj.temp_sigstar_y_direction;
                 end
                 for yi = 1:length(data)
-                    stat(yi) = obj.ttest(data{yi},1);
+                    [stat(yi) out(yi)] = obj.ttest(data{yi},1);
                     obj.sigstar_y({av(yi,:)},[stat(yi)],0,di(yi),[1 2], 0);
                 end
             end

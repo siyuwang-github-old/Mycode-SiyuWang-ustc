@@ -19,6 +19,52 @@ classdef horizon < SiyuLatex & SiyuPlots
             obj.n_exp = length(obj.exps);
             obj.acthres = 0;
         end
+        function savedatacsv(obj, option)
+            if ~exist('option')
+                option = '';
+            end
+            td = obj.temp_data;
+            x = {'expt_name','subjectID','order','game_id','isactive','gameLength','uc','m1','m2',...
+                'r1','r2','r3','r4','r5','r6','r7','r8','r9','r10',...
+                'c1','c2','c3','c4','c5','c6','c7','c8','c9','c10',...
+                'rt1','rt2','rt3','rt4','rt5','rt6','rt7','rt8','rt9','rt10',...
+                };
+            count = 1;
+            order_apwithin = 2 - ((mod(obj.temp_gp.subjectID,2) == 0) == cellfun(@(x)strcmp(x, 'Active'), obj.temp_gp.cond_exp));
+            for si = 1:length(td)
+                disp(sprintf('sub %d of %d',si,length(td)));
+                g = td(si).game;
+                n = g.n_game;
+                te = regexp(td(si).info_exp,'\d*','Match');
+%                 subid = [cellfun(@(x)str2num(x), te) td(si).subjectID td(si).datestr_task td(si).timestr_task];
+
+                subid = [cellfun(@(x)str2num(x), te) td(si).subjectID];
+                subid = arrayfun(@(x)num2str(x), subid, 'UniformOutput',false);
+                subid = str2num([subid{:}]);
+                for ni = 1:n
+                    
+                    x{count + ni,1} = td(si).info_exp;
+                    if strcmp(option, 'order')
+                        x{count + ni,2} = subid;
+                        x{count + ni,3} = order_apwithin(si);
+                    else
+                        x{count + ni,2} = si;
+                        x{count + ni,3} = td(si).info_session;
+                    end
+                    x{count + ni,4} = ni;
+                    x{count + ni,5} = td(si).cond_exp;
+                    x{count + ni,6} = g.cond_horizon(ni);
+                    x{count + ni,7} = 2 + g.cond_info(ni);
+                    x(count + ni,8:9) = arrayfun(@(x)x,g.underlyingMean(ni,:),'UniformOutput',false);
+                    x(count + ni,10:19) = arrayfun(@(x)obj.iif(isnan(x),'NaN',x),g.R_chosen(ni,:),'UniformOutput',false);
+                    x(count + ni,20:29) = arrayfun(@(x)obj.iif(isnan(x),'NaN',x),round((g.key(ni,:)+3)/2),'UniformOutput',false);
+                    x(count + ni,30:39) = arrayfun(@(x)obj.iif(isnan(x),'NaN',x),g.RT_recorded(ni,:),'UniformOutput',false);
+                end
+                count = count + n;
+            end
+            disp(sprintf('#1 = %d, #2 = %d', length(td), length(unique([x{2:end,2}]))));
+            xlswrite([obj.savename, obj.savesuffix, '.xls'], x);
+        end
         function load_data(obj, filename)
             if ~exist('filename')
                 filename = fullfile(obj.siyupathdatamat,'data_horizon_compiled.mat');
@@ -323,6 +369,8 @@ classdef horizon < SiyuLatex & SiyuPlots
         function savetoshare(obj, savename)
             gp = obj.temp_gp;
             d.subjectID = gp.subjectID;
+            d.age = gp.demo_age;
+            d.gender = gp.demonum_gender;
             d.exp = gp.info_expsavename;
             d.isactive = cellfun(@(x)strcmp(x, 'Active'), gp.cond_exp);
             d.day = gp.day;
