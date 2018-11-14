@@ -270,17 +270,47 @@ classdef horizon < SiyuLatex & SiyuPlots
             end
             tt = [idx*1000+ gp.subjectID];
             idx_both = arrayfun(@(x)sum(tt == x) == 2, tt);
-            idx_ac = arrayfun(@(x)obj.iif(isnan(x),1,min(gp.trialn(2).ac(tt == x,10))> obj.acthres), tt,'UniformOutput',false);
-            idx_ac = [idx_ac{:}]';
-            if obj.acthres > 0
-                str = [str '_' num2str(round(obj.acthres*100))];
-            end
             if exist('idx_special')
                 idx_input = idx & idx_active & idx_age & idx_both & idx_special ;
             else
                 idx_input = idx & idx_active & idx_age & idx_both ;
             end
+            if obj.acthres >= 0
+                if obj.acthres > 0
+                    str = [str '_' num2str(round(obj.acthres*100))];
+                end
+%                 idx_ac = arrayfun(@(x)obj.iif(isnan(x),1,min(gp.trialn(2).ac(tt == x,10))> obj.acthres), tt,'UniformOutput',false);
+%                 idx_ac = [idx_ac{:}]';
+                idx_ac = gp.trialn(2).ac(:,10) > obj.acthres;
+            else
+                acth = -obj.acthres;
+                str = [str '_acp' num2str(round(abs(log(acth)/log(acth))*100))];
+                nt = gp.num_game;
+                warning off;
+                chanchecktable.nt = [];
+                chanchecktable.p = [];
+                for ci = 1:length(nt)
+                    if idx_input(ci) == 0
+                        chans(ci) = 0;
+                        continue;
+                    end
+                    tidx = find(ismember(chanchecktable.nt, nt(ci)));
+                    if isempty(tidx)
+                        chans(ci) = obj.chancexp(nt(ci), acth);
+                        chanchecktable.nt = [chanchecktable.nt nt(ci)];
+                        chanchecktable.p = [chanchecktable.p chans(ci)];
+                    elseif length(tidx) == 1
+                        chans(ci) = chanchecktable.p(tidx);
+                    else
+                        error('weird');
+                    end
+                end
+                warning on;
+                idx_ac = gp.trialn(2).ac(:,10) > chans';
+            end
             idx_input = idx_input & idx_ac;
+            idx_both = arrayfun(@(x)(sum(tt == tt(x)) == 2) && min(idx_input(tt == tt(x))), 1:length(tt));
+            idx_input = idx_input & idx_both';
             obj.setupgroup(idx_input);
             obj.savesuffix = str;
         end
@@ -388,18 +418,25 @@ classdef horizon < SiyuLatex & SiyuPlots
             d.RT6 = gp.trialn(2).RT(:,5:10);
             save(savename, 'd');
         end
-        function save4MCMC(obj, modelname, isfake)
+        function save4MCMC(obj, modelname, isfake, maxtrial)
+            if ~exist('maxtrial')
+                maxtrial = Inf;
+            end
+            if ~exist('isfake')
+                isfake = '';
+            end
             data = obj.temp_data;
             bayessuffix = '';
+            condname = '';
             switch modelname
                 case 'learningmodel'
                     bayesdata.nHorizon = 2;
                     bayesdata.nSubject = length(data);
                     nT = arrayfun(@(x)x.game.n_game, data);
-                    LEN = max(nT);
+                    LEN = min(max(nT),maxtrial);
                     bayesdata.nForcedTrials = 4;
                     bayesdata.nCond = length(obj.idxn);
-                    for ci = 1:bayesdata.nCond;
+                    for ci = 1:bayesdata.nCond
                         for si = obj.idxn{ci}'
                             gd = data(si).game;
                             nT = gd.n_game;
@@ -414,6 +451,28 @@ classdef horizon < SiyuLatex & SiyuPlots
                             end
                         end
                     end
+                case 'learningmodel_minimum'
+                    for ci = 1:length(obj.idxn)
+                        tbayesdata = [];
+                        tbayesdata.nHorizon = 2;
+                        tbayesdata.nSubject = length(data);
+                        nT = arrayfun(@(x)x.game.n_game, data);
+                        LEN = min(max(nT),maxtrial);
+                        tbayesdata.nForcedTrials = 4;
+                        for si = obj.idxn{ci}'
+                            gd = data(si).game;
+                            nT = gd.n_game;
+                            tbayesdata.nTrial(si,1) = nT;
+                            tbayesdata.horizon(si,:) = obj.getcolumn(ceil(gd.cond_horizon'/5), LEN);
+                            tbayesdata.dInfo(si,:) = obj.getcolumn(gd.cond_info',LEN);
+                            tbayesdata.c5(si,:) = obj.getcolumn((gd.key(:,5)' == 1) + 0,LEN);
+                            for ti = 1:tbayesdata.nForcedTrials
+                                tbayesdata.cforced(si,:,ti) =  obj.getcolumn((gd.key(:,ti)' == 1) + 0,LEN);
+                                tbayesdata.r(si,:,ti) =  obj.getcolumn(gd.R_chosen(:,ti)',LEN);
+                            end
+                        end
+                        bayesdata{ci} = tbayesdata;
+                    end
                 case '2noisemodel'
                     bayesdata.nHorizon = 2;
                     bayesdata.nSubject = length(data);
@@ -422,7 +481,7 @@ classdef horizon < SiyuLatex & SiyuPlots
                     %                     bayesdata.nForcedTrials = 4;
                     for si = 1:bayesdata.nSubject
                         gd = data(si).game;
-                        if(exist('isfake') && strcmp('2noise',isfake)) 
+                        if strcmp('2noise',isfake) 
                             fileresult =  fullfile(obj.siyupathresultbayes, [obj.savename '_' modelname obj.savesuffix '_bayesresult.mat']);
                             if exist(fileresult)
                                 bayesresult = importdata(fileresult);
@@ -450,7 +509,7 @@ classdef horizon < SiyuLatex & SiyuPlots
                     bayesdata.nHorizon = 2;
                     bayesdata.nSubject = length(data);
                     nT = arrayfun(@(x)x.game.n_game, data);
-                    LEN = max(nT);
+                    LEN = min(max(nT),maxtrial);
                     bayesdata.nCond = length(obj.idxn);
                     for ci = 1:bayesdata.nCond;
                         for si = obj.idxn{ci}'
@@ -465,7 +524,7 @@ classdef horizon < SiyuLatex & SiyuPlots
                         end
                     end
             end
-            save(fullfile(obj.siyupathdatabayes, [obj.savename '_' modelname obj.savesuffix bayessuffix]),'bayesdata','modelname');
+            save(fullfile(obj.siyupathdatabayes, [obj.savename '_' modelname obj.savesuffix bayessuffix]),'bayesdata','modelname','condname');
         end
         function game = shufflerepeatedgames(obj, game, As, bs, nints, nexts) % wrong name, should be simulate
             [~,~,ranking] = unique(game.repeat_id);
