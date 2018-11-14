@@ -70,34 +70,42 @@ classdef analysis_bayesian < Siyuhandle
                         'dN','dIB','dSB'};
             end
             datas = obj.data;
-            if exist('istest') && istest == 1
-                data = obj.data;
-                fnms = fieldnames(data);
-                fnms = fnms(cellfun(@(x)size(data.(x),1), fnms) == data.nSubject);
-                for fi = 1:length(fnms)
-                    if length(data.(fnms{fi})) == 2
-                        data.(fnms{fi}) = data.(fnms{fi})(1:2,:);
-                    else
-                        data.(fnms{fi}) = data.(fnms{fi})(1:2,:,:);
-                    end
-                end
-                data.nSubject = 2;
-                nburnin = 0;
-                nsamples = 2;
-            else
-                data = obj.data;
-                nburnin = obj.nburnin;
-                nsamples = obj.nsamples;
+            if ~iscell(datas)
+                datas = {datas};
             end
-            obj.init0 = obj.get_bayesinit;
-            modelfile = fullfile(obj.siyupathmodelbayes,...
-                ['model_' obj.modelname '.txt']);
-            disp(['Fitting now:' modelfile]);
-            [samples, stats, structArray, tictoc] = obj.fit_matjags(modelfile, data, obj.init0, obj.nchains, nburnin, nsamples, obj.params);
-            save(fullfile(obj.siyupathresultbayes, [obj.filename,'_bayesresult.mat']),'stats','tictoc','modelname');
+            for fiti = 1:length(datas)
+                if exist('istest') && istest == 1
+                    data = datas{fiti};
+                    fnms = fieldnames(data);
+                    fnms = fnms(cellfun(@(x)size(data.(x),1), fnms) == data.nSubject);
+                    for fi = 1:length(fnms)
+                        if length(data.(fnms{fi})) == 2
+                            data.(fnms{fi}) = data.(fnms{fi})(1:2,:);
+                        else
+                            data.(fnms{fi}) = data.(fnms{fi})(1:2,:,:);
+                        end
+                    end
+                    data.nSubject = 2;
+                    nburnin = 0;
+                    nsamples = 2;
+                else
+                    data = datas{fiti};
+                    nburnin = obj.nburnin;
+                    nsamples = obj.nsamples;
+                end
+                obj.init0 = obj.get_bayesinit;
+                modelfile = fullfile(obj.siyupathmodelbayes,...
+                    ['model_' obj.modelname '.txt']);
+                disp(['Fitting now:' modelfile fitiname]);
+                [samples, stats, structArray, tictoc] = obj.fit_matjags(modelfile, data, obj.init0, obj.nchains, nburnin, nsamples, obj.params);
+                save(fullfile(obj.siyupathresultbayes, [obj.filename,'_bayesresult' num2str(fiti) '.mat']),'stats','tictoc','modelname','fitiname');
+                allstats{fiti} = stats;
+                allsamples{fiti} = samples;
+            end
             obj.closepool;
-            obj.stats = stats;
-            obj.samples = samples;
+            obj.stats = allstats;
+            obj.samples = allsamples;
+            save(fullfile(obj.siyupathresultbayes, [obj.filename,'_bayesresult.mat']),'stats','tictoc','modelname','condname');
         end
         function savesamples(obj)
             samples = obj.samples;

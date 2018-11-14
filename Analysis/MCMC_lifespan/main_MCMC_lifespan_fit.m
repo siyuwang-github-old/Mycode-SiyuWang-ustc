@@ -14,7 +14,7 @@ if exist(fullfile(path.siyupathresultbayes, [fs(fi).name(1:end-4), '_bayesresult
     continue;
 end
 %%
-abe = analysis_bayesian(fs(fi).name);a
+abe = analysis_bayesian(fs(fi).name);
 %%
 abe.analysis(1);
 %%
