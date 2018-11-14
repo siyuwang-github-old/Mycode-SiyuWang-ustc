@@ -547,7 +547,7 @@ classdef horizon < SiyuLatex & SiyuPlots
                     for ci = 1:bayesdata.nCond;
                         for si = obj.idxn{ci}'
                             gd = data(si).game;
-                            nT = gd.n_game;
+                            nT = min(gd.n_game, LEN);
                             bayesdata.Cond(si,1) = ci;
                             bayesdata.nTrial(si,1) = nT;
                             bayesdata.horizon(si,:) = obj.getcolumn(ceil(gd.cond_horizon'/5), LEN);
