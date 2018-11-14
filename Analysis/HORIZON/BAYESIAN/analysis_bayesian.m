@@ -15,6 +15,7 @@ classdef analysis_bayesian < Siyuhandle
         poolobj
         stats
         samples
+        condname
     end
     methods
         function obj = analysis_bayesian(filename)
@@ -26,6 +27,7 @@ classdef analysis_bayesian < Siyuhandle
             obj.poolobj = [];
             obj.data = dd.bayesdata;
             obj.modelname = dd.modelname;
+            obj.condname = dd.condname;
             obj.setup_chain;
         end
         function setup_chain(obj)
@@ -37,6 +39,7 @@ classdef analysis_bayesian < Siyuhandle
         function analysis(obj, istest)
             obj.openpool;
             modelname = obj.modelname;
+            condname = obj.condname;
             switch modelname
                 case 'learningmodel_minimum'
                 case 'learningmodel_horizononly'
@@ -73,7 +76,11 @@ classdef analysis_bayesian < Siyuhandle
             if ~iscell(datas)
                 datas = {datas};
             end
+            if ~iscell(condname)
+                condname = {condname};
+            end
             for fiti = 1:length(datas)
+                fitiname = condname{fiti};
                 if exist('istest') && istest == 1
                     data = datas{fiti};
                     fnms = fieldnames(data);
@@ -116,12 +123,17 @@ classdef analysis_bayesian < Siyuhandle
             nchains = obj.nchains;
             for i=1:nchains
                 S = [];
+                if isfield(obj.data, 'nCond')
+                    nCond = obj.data.nCond;
+                else
+                    nCond = 1;
+                end
                 for j = 1:length(params)
                     str = params{j};
                     if ~isempty(strfind(str,'_pcond'))
-                        S.(str) = ones(obj.data.nCond,2);
+                        S.(str) = ones(nCond,2);
                     elseif ~isempty(strfind(str,'_ncond'))
-                        S.(str) = zeros(obj.data.nCond,2);
+                        S.(str) = zeros(nCond,2);
                     elseif ~isempty(strfind(str,'_p'))
                         S.(str) = ones(1,2);
                     elseif ~isempty(strfind(str,'_n'))
