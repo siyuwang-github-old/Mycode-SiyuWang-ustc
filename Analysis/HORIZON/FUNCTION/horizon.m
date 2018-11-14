@@ -453,25 +453,31 @@ classdef horizon < SiyuLatex & SiyuPlots
                     end
                 case 'learningmodel_minimum'
                     for ci = 1:length(obj.idxn)
-                        tbayesdata = [];
-                        tbayesdata.nHorizon = 2;
-                        tbayesdata.nSubject = length(data);
-                        nT = arrayfun(@(x)x.game.n_game, data);
-                        LEN = min(max(nT),maxtrial);
-                        tbayesdata.nForcedTrials = 4;
-                        for si = obj.idxn{ci}'
-                            gd = data(si).game;
-                            nT = gd.n_game;
-                            tbayesdata.nTrial(si,1) = nT;
-                            tbayesdata.horizon(si,:) = obj.getcolumn(ceil(gd.cond_horizon'/5), LEN);
-                            tbayesdata.dInfo(si,:) = obj.getcolumn(gd.cond_info',LEN);
-                            tbayesdata.c5(si,:) = obj.getcolumn((gd.key(:,5)' == 1) + 0,LEN);
-                            for ti = 1:tbayesdata.nForcedTrials
-                                tbayesdata.cforced(si,:,ti) =  obj.getcolumn((gd.key(:,ti)' == 1) + 0,LEN);
-                                tbayesdata.r(si,:,ti) =  obj.getcolumn(gd.R_chosen(:,ti)',LEN);
+                        for horizoni = 1:2
+                            tbayesdata = [];
+                            tbayesdata.nHorizon = 2;
+                            tbayesdata.nSubject = length(data);
+                            nT = arrayfun(@(x)sum(ceil(x.game.cond_horizon/5) == horizoni), data);
+                            LEN = min(max(nT),maxtrial);
+                            tbayesdata.nForcedTrials = 4;
+                            scount = 0;
+                            for si = obj.idxn{ci}'
+                                scount = scount + 1;
+                                gd = data(si).game;
+                                idxh = ceil(gd.cond_horizon/5) == horizoni;
+                                nT = sum(idxh);
+                                tbayesdata.nTrial(scount,1) = nT;
+                                %                             tbayesdata.horizon(si,:) = obj.getcolumn(ceil(gd.cond_horizon'/5), LEN);
+                                tbayesdata.dInfo(scount,:) = obj.getcolumn(gd.cond_info(idxh)',LEN);
+                                tbayesdata.c5(scount,:) = obj.getcolumn((gd.key(idxh,5)' == 1) + 0,LEN);
+                                for ti = 1:tbayesdata.nForcedTrials
+                                    tbayesdata.cforced(scount,:,ti) =  obj.getcolumn((gd.key(idxh,ti)' == 1) + 0,LEN);
+                                    tbayesdata.r(scount,:,ti) =  obj.getcolumn(gd.R_chosen(idxh,ti)',LEN);
+                                end
                             end
+                            condname{(ci-1)*2 + horizoni} = sprintf('cond = %s, horizon = %d', obj.idxnlabel{ci}, horizoni*5);
+                            bayesdata{(ci-1)*2 + horizoni} = tbayesdata;
                         end
-                        bayesdata{ci} = tbayesdata;
                     end
                 case '2noisemodel'
                     bayesdata.nHorizon = 2;
