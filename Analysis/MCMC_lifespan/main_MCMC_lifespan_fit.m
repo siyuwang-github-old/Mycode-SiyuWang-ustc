@@ -1,10 +1,22 @@
 %% mcmc fit
 clear all, clc;
 %%
-abe = analysis_bayesian('BenAndreaLifespan_learningmodel');
+isfake = false;
+sh = Siyuhandle;
+fs = dir(fullfile(sh.siyupathdatabayes, 'MCMClifespan*'));
+idfake = arrayfun(@(x)~isempty(strfind(x.name, 'fake')), fs);
+fs = SiyuTools.iif(isfake, fs(idfake), fs(~idfake));
+path = Siyuhandle;
 %%
-abe = analysis_bayesian('BenAndreaLifespan_simplemodel');
+for fi = 1:length(fs)
+if exist(fullfile(path.siyupathresultbayes, [fs(fi).name(1:end-4), '_bayesresult.mat']))
+    warning('files found, skipped');
+    continue;
+end
 %%
-abe.analysis(0);
+abe = analysis_bayesian(fs(fi).name);a
+%%
+abe.analysis(1);
 %%
 abe.savesamples;
+end

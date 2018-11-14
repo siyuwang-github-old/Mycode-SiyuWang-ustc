@@ -1,0 +1,142 @@
+model {
+	# Modified by Siyu from Bob's code
+    # This model has:
+    #   Kalman filter inference
+    #   Info bonus
+
+    #   spatial bias is in this one and it can vary by 
+
+    # no choice kernel
+    # inference is constant across horizon and uncertainty but can vary by 
+    # "condition".  Condition can be anything e.g. TMS or losses etc ...
+    
+    # two types of condition:
+    #   * inference fixed - e.g. horizon, uncertainty - C1, nC1
+    #   * inference varies - e.g. TMS, losses - C2, nCond
+
+    # hyperpriors =========================================================
+
+    # inference does not vary by condition 1, but can by condition 2
+        # note, always use j to refer to condition 2
+        a0_p ~ dunif(0.1, 10) #dexp(0.001)
+        b0_p ~ dunif(0.5, 10) #dexp(0.0001)
+        a_inf_p ~ dunif(0.1, 10) #dexp(0.001)
+        b_inf_p ~ dunif(0.1, 10) #dexp(0.0001)
+        mu0_mean_n ~ dnorm(50, 0.005)
+        mu0_sigma_p ~ dgamma(1,0.001)
+        mu0_tau <- 1/mu0_sigma_p[j]
+    
+    
+
+ 
+    # information bonus and decision noise vary by condition 1 and condition 2
+ 		for (i in 1:nHorizon){ # loop over horizon
+        
+            hyperIB_mean_ncond[i] ~ dnorm(0, 0.0001)
+            hyperIB_sigma_pcond[i] ~ dgamma(1,0.001)
+            hyperIB_tau[i] <- 1 / hyperIB_sigma_pcond[i]
+        
+            hyperN_k_pcond[i] ~ dexp(1)
+            hyperN_lambda_pcond[i] ~ dexp(10)
+            hyperN_mean[i] <- hyperN_k_pcond[i] / hyperN_lambda_pcond[i]
+
+            hyperSB_mean_ncond[i] ~ dnorm(0, 0.0001)
+            hyperSB_sigma_pcond[i] ~ dgamma(1,0.001)
+            hyperSB_tau[i] <- 1 / hyperSB_sigma_pcond[i]
+        }
+		dhyperIB = hyperIB_mean_ncond[2] - hyperIB_mean_ncond[1];
+		dhyperSB = hyperSB_mean_ncond[2] - hyperSB_mean_ncond[1];
+		dhyperN = hyperN_mean[2] - hyperN_mean[1];
+
+    # priors ==============================================================
+    for (s in 1:nSubject) { # loop over subjects
+		
+        # inference -------------------------------------------------------
+        #for (j in 1:nCond) {
+            # initial learning rate - so a0, b0 define alpha0 and note alpha0 is same for both bandits
+            dum[s] ~ dbeta(a0_p, b0_p)
+            alpha_start[s] <- dum[s]*0.999 # hack to prevent alpha_start == 1
+            # asymptotic learning rate
+            alpha_inf[s] ~ dbeta(a_inf_p, b_inf_p)
+
+            # initial value
+            mu0[s] ~ dnorm( mu0_mean_n, mu0_tau )
+
+            # compute alpha0 and alpha_d
+            alpha0[s]  <- alpha_start[s] / (1 - alpha_start[s]) - alpha_inf[s]^2 / (1 - alpha_inf[s])
+            alpha_d[s] <- alpha_inf[s]^2 / (1 - alpha_inf[s])
+        #}
+        
+        # information bonus and decision noise ----------------------------
+        for (i in 1:nHorizon) { # loop over horizon
+			#    for (j in 1:nCond) { # loop over uncertainty condition
+
+            # information bonus
+            IB[s,i] ~ dnorm( hyperIB_mean_ncond[i], hyperIB_tau[i] )
+            # spatial bias
+            SB[s,i] ~ dnorm( hyperSB_mean_ncond[i], hyperSB_tau[i] )
+            # decision noise
+            N[s,i] ~ dgamma( hyperN_k_pcond[i], hyperN_lambda_pcond[i] )
+            #	}   
+        }
+		
+		dN[s] = N[s,2] - N[s,1];
+		dIB[s] = IB[s,2] - IB[s,1];
+		dSB[s] = SB[s,2] - SB[s,1];
+
+    }
+
+
+    # subject level =======================================================
+    for (s in 1:nSubject) { # loop over subjects
+        for (g in 1:nTrial[s]) { # loop over games
+            
+            # inference model ---------------------------------------------
+            
+            # initialize stuff
+            # learning rates 
+            alpha1[s,g,1] <- alpha0[s]
+            alpha2[s,g,1] <- alpha0[s]
+
+            # values
+            mu1[s,g,1] <- mu0[s]
+            mu2[s,g,1] <- mu0[s]
+
+            # information bonus and decision noise for this game depend on 
+            # condition 1, C1, and condition 2, C2
+            IB_g[s,g] <- IB[s, horizon[s,g]]
+            sigma_g[s,g] <- N[s, horizon[s,g]]
+            bias_g[s,g] <- SB[s, horizon[s,g]]
+
+
+            # run inference model
+            for (t in 1:nForcedTrials) { # loop over forced-choice trials
+
+                # learning rates
+                alpha1[s,g,t+1] <- ifelse( cforced[s,g,t] == 0, 1/( 1/(alpha1[s,g,t] + alpha_d[s]) + 1 ), 1/( 1/(alpha1[s,g,t] + alpha_d[s]) ) )
+                alpha2[s,g,t+1] <- ifelse( cforced[s,g,t] == 1, 1/( 1/(alpha2[s,g,t] + alpha_d[s]) + 1 ), 1/( 1/(alpha2[s,g,t] + alpha_d[s]) ) )
+				#
+                # update means for each bandit
+                mu1[s,g,t+1] <- ifelse( cforced[s,g,t] == 0, mu1[s,g,t] + alpha1[s,g,t+1] * (r[s,g,t] - mu1[s,g,t]), mu1[s,g,t])
+                mu2[s,g,t+1] <- ifelse( cforced[s,g,t] == 1, mu2[s,g,t] + alpha2[s,g,t+1] * (r[s,g,t] - mu2[s,g,t]), mu2[s,g,t])
+				# 
+            }
+
+            # compute difference in values
+            dQ[s,g] <- mu2[s,g,nForcedTrials+1] - mu1[s,g,nForcedTrials+1] + IB_g[s,g] * dInfo[s,g] + bias_g[s,g]
+
+            # choice probabilities
+            p[s,g] <- 1 / ( 1 + exp( - dQ[s,g] / (sigma_g[s,g])))
+
+            # choices
+            c5[s,g] ~ dbern( p[s,g] )
+
+        }
+    }
+    
+
+
+    
+
+
+}
