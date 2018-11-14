@@ -19,8 +19,8 @@ pt.line_modelfreebyagen;
 pt.line_switchn;
 pt.line_bypatternn;
 %%
-pt.save4MCMC('learningmodel_minimum',[],160);
+pt.save4MCMC('learningmodel_horizononly',[],80);
 %%
-pt.save4MCMC('simplemodel',[],160);
+pt.save4MCMC('simplemodel',[],80);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
