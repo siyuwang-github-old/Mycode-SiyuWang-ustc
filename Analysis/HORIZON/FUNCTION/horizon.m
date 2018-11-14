@@ -466,7 +466,7 @@ classdef horizon < SiyuLatex & SiyuPlots
                             gd = data(si).game;
                             nT = min(gd.n_game, LEN);
                             tbayesdata.nTrial(scount,1) = nT;
-                            %                             tbayesdata.horizon(si,:) = obj.getcolumn(ceil(gd.cond_horizon'/5), LEN);
+                            tbayesdata.horizon(si,:) = obj.getcolumn(ceil(gd.cond_horizon'/5), LEN);
                             tbayesdata.dInfo(scount,:) = obj.getcolumn(gd.cond_info',LEN);
                             tbayesdata.c5(scount,:) = obj.getcolumn((gd.key(:,5)' == 1) + 0,LEN);
                             for ti = 1:tbayesdata.nForcedTrials
