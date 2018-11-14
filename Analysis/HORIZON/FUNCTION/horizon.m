@@ -456,8 +456,8 @@ classdef horizon < SiyuLatex & SiyuPlots
                     for ci = 1:length(obj.idxn)
                         tbayesdata = [];
                         tbayesdata.nHorizon = 2;
-                        tbayesdata.nSubject = length(data);
-                        nT = arrayfun(@(x)x.game.n_game, data);
+                        tbayesdata.nSubject = length(data(obj.idxn{ci}));
+                        nT = arrayfun(@(x)x.game.n_game, data(obj.idxn{ci}));
                         LEN = min(max(nT),maxtrial);
                         tbayesdata.nForcedTrials = 4;
                         scount = 0;
@@ -466,7 +466,7 @@ classdef horizon < SiyuLatex & SiyuPlots
                             gd = data(si).game;
                             nT = min(gd.n_game, LEN);
                             tbayesdata.nTrial(scount,1) = nT;
-                            tbayesdata.horizon(si,:) = obj.getcolumn(ceil(gd.cond_horizon'/5), LEN);
+                            tbayesdata.horizon(scount,:) = obj.getcolumn(ceil(gd.cond_horizon'/5), LEN);
                             tbayesdata.dInfo(scount,:) = obj.getcolumn(gd.cond_info',LEN);
                             tbayesdata.c5(scount,:) = obj.getcolumn((gd.key(:,5)' == 1) + 0,LEN);
                             for ti = 1:tbayesdata.nForcedTrials
