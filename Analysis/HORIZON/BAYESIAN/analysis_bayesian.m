@@ -32,8 +32,8 @@ classdef analysis_bayesian < Siyuhandle
         end
         function setup_chain(obj)
             obj.nchains = 4; % How Many Chains?
-            obj.nburnin = 2000; % How Many Burn-in Samples?
-            obj.nsamples = 4000; % How Many Recorded Samples?
+            obj.nburnin = 1000; % How Many Burn-in Samples?
+            obj.nsamples = 2000; % How Many Recorded Samples?
             obj.thin = 1;
         end
         function analysis(obj, istest)
@@ -42,6 +42,15 @@ classdef analysis_bayesian < Siyuhandle
             condname = obj.condname;
             switch modelname
                 case 'learningmodel_minimum'
+                case 'learningmodel_nodiffusion_horizononly'
+                    obj.params = {'a0_p','b0_p','a_inf_p','b_inf_p',...
+                        'mu0_mean_n','mu0_sigma_p',...
+                        'hyperIB_mean_ncond','hyperIB_sigma_pcond',...
+                        'hyperN_k_pcond','hyperN_lambda_pcond','hyperN_mean',...
+                        'hyperSB_mean_ncond','hyperSB_sigma_pcond',...
+                        'alpha_inf','mu0','alpha0','IB','SB','N',...
+                        'IB_g','sigma_g','bias_g','mu1','mu2','dhyperIB','dhyperSB','dhyperN',...
+                        'dN','dIB','dSB'};
                 case 'learningmodel_horizononly'
                     obj.params = {'a0_p','b0_p','a_inf_p','b_inf_p',...
                         'mu0_mean_n','mu0_sigma_p',...
@@ -105,14 +114,25 @@ classdef analysis_bayesian < Siyuhandle
                     ['model_' obj.modelname '.txt']);
                 disp(['Fitting now:' modelfile fitiname]);
                 [samples, stats, structArray, tictoc] = obj.fit_matjags(modelfile, data, obj.init0, obj.nchains, nburnin, nsamples, obj.params);
-                save(fullfile(obj.siyupathresultbayes, [obj.filename,'_bayesresult' num2str(fiti) '.mat']),'stats','tictoc','modelname','fitiname');
+                if length(datas) > 1
+                    strfiti = num2str(fiti);
+                    if istest
+                        save(fullfile(obj.siyupathresultbayes, [obj.filename,'_bayesresult_test' strfiti '.mat']),'stats','tictoc','modelname','fitiname');
+                    else
+                        save(fullfile(obj.siyupathresultbayes, [obj.filename,'_bayesresult' strfiti '.mat']),'stats','tictoc','modelname','fitiname');
+                    end
+                end
                 allstats{fiti} = stats;
                 allsamples{fiti} = samples;
             end
             obj.closepool;
             obj.stats = allstats;
             obj.samples = allsamples;
-            save(fullfile(obj.siyupathresultbayes, [obj.filename,'_bayesresult.mat']),'stats','tictoc','modelname','condname');
+            if istest
+                save(fullfile(obj.siyupathresultbayes, [obj.filename,'_bayesresult_test.mat']),'stats','tictoc','modelname','condname');
+            else
+                save(fullfile(obj.siyupathresultbayes, [obj.filename,'_bayesresult.mat']),'stats','tictoc','modelname','condname');
+            end
         end
         function savesamples(obj)
             samples = obj.samples;

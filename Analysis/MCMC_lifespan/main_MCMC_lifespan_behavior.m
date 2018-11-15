@@ -22,5 +22,7 @@ pt.line_bypatternn;
 pt.save4MCMC('learningmodel_horizononly',[],80);
 %%
 pt.save4MCMC('simplemodel',[],80);
+%%
+pt.save4MCMC('learningmodel_nodiffusion_horizononly',[],80);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         

@@ -451,7 +451,32 @@ classdef horizon < SiyuLatex & SiyuPlots
                             end
                         end
                     end
-                    
+                case 'learningmodel_nodiffusion_horizononly'
+                     for ci = 1:length(obj.idxn)
+                        tbayesdata = [];
+                        tbayesdata.nHorizon = 2;
+                        tbayesdata.nSubject = length(data(obj.idxn{ci}));
+                        nT = arrayfun(@(x)x.game.n_game, data(obj.idxn{ci}));
+                        LEN = min(max(nT),maxtrial);
+                        tbayesdata.nForcedTrials = 4;
+                        scount = 0;
+                        for si = obj.idxn{ci}'
+                            scount = scount + 1;
+                            gd = data(si).game;
+                            nT = min(gd.n_game, LEN);
+                            tbayesdata.nTrial(scount,1) = nT;
+                            tbayesdata.horizon(scount,:) = obj.getcolumn(ceil(gd.cond_horizon'/5), LEN);
+                            tbayesdata.dInfo(scount,:) = obj.getcolumn(gd.cond_info',LEN);
+                            tbayesdata.c5(scount,:) = obj.getcolumn((gd.key(:,5)' == 1) + 0,LEN);
+                            for ti = 1:tbayesdata.nForcedTrials
+                                tbayesdata.cforced(scount,:,ti) =  obj.getcolumn((gd.key(:,ti)' == 1) + 0,LEN);
+                                tbayesdata.r(scount,:,ti) =  obj.getcolumn(gd.R_chosen(:,ti)',LEN);
+                            end
+                        end
+                        condname{ci} = obj.idxnlabel{ci};
+                        bayesdata{ci} = tbayesdata;
+                        
+                    end
                 case 'learningmodel_horizononly'
                     for ci = 1:length(obj.idxn)
                         tbayesdata = [];

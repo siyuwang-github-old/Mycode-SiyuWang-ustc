@@ -17,7 +17,7 @@ end
 %%
 abe = analysis_bayesian(fs(fi).name);
 %%
-abe.analysis(0);
+abe.analysis(1);
 %%
 abe.savesamples;
 end
